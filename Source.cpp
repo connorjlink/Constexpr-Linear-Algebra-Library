@@ -124,7 +124,7 @@ namespace core
 
 			[&]<std::size_t... i>(std::index_sequence<i...>)
 			{
-				((std::get<i>(outVec) = binaryop{}(std::get<i>(vec), operand)), ...);
+				((std::get<i>(outVec) = binaryop{}(std::get<i>(vec), operand)) , ...);
 			}
 			(std::make_index_sequence<sizeof...(Ts)>{});
 
@@ -138,7 +138,7 @@ namespace core
 
 			[&] <std::size_t... i>(std::index_sequence<i...>)
 			{
-				((std::get<i>(outVec) = binaryop{}(std::get<i>(vec1), std::get<i>(vec2))), ...);
+				((std::get<i>(outVec) = binaryop{}(std::get<i>(vec1), std::get<i>(vec2))) , ...);
 			}
 			(std::make_index_sequence<sizeof...(Ts)>{});
 
@@ -251,7 +251,7 @@ namespace core
 			{
 				for (auto j = 0; j < S; j++)
 				{
-					auto sum = 0;
+					T sum = static_cast<T>(0);
 
 					for (auto k = 0; k < S; k++)
 					{
@@ -265,23 +265,23 @@ namespace core
 			return m3;
 		}
 
-		template<typename T>
+		template<std::size_t S, typename T>
 		constexpr auto identity() noexcept
 		{
-			matrix<4, T> mat;
+			matrix<S, T> mat = {};
 
-			mat[0][0] = 1.0f;
-			mat[1][1] = 1.0f;
-			mat[2][2] = 1.0f;
-			mat[3][3] = 1.0f;
+			for (auto i = 0; i < S; ++i)
+			{
+				mat[i][i] = static_cast<T>(1);
+			}
 
 			return mat;
 		}
 
 		template<typename T>
-		constexpr auto rotationX(T&& angle) noexcept requires std::floating_point<T>
+		constexpr auto rotationX(T&& angle) noexcept
 		{
-			matrix<4, T> mat;
+			matrix<4, T> mat = {};
 
 			mat[0][0] = 1.0f;
 			mat[1][1] = gcem::cos(angle);
@@ -294,9 +294,9 @@ namespace core
 		}
 
 		template<typename T>
-		constexpr auto rotationY(T&& angle) noexcept requires std::floating_point<T>
+		constexpr auto rotationY(T&& angle) noexcept
 		{
-			matrix<4, T> mat;
+			matrix<4, T> mat = {};
 
 			mat[0][0] = gcem::cos(angle);
 			mat[0][2] = gcem::sin(angle);
@@ -309,9 +309,9 @@ namespace core
 		}
 
 		template<typename T>
-		constexpr auto rotationZ(T&& angle) noexcept requires std::floating_point<T>
+		constexpr auto rotationZ(T&& angle) noexcept
 		{
-			matrix<4, T> mat;
+			matrix<4, T> mat = {};
 
 			mat[0][0] = gcem::cos(angle);
 			mat[0][1] = gcem::sin(angle);
@@ -324,16 +324,15 @@ namespace core
 		}
 
 		template<typename T>
-		constexpr auto rotationXYZ(T&& x, T&& y, T&& z) noexcept requires std::floating_point<T>
+		constexpr auto rotationXYZ(T&& x, T&& y, T&& z) noexcept
 		{
-			auto rotX = rotationX(x);
-			auto rotY = rotationY(y);
-			auto rotZ = rotationZ(z);
+			return mat::compose(mat::rotationX(std::move(x)), mat::compose(mat::rotationY(std::move(y)), mat::rotationZ(std::move(z))));
+		}
 
-			auto rotXY = compose(rotX, rotY);
-			auto rotXYZ = compose(rotXY, rotZ);
-
-			return rotXYZ;
+		template<typename T>
+		constexpr auto rotationXYZ(const T& x, const T& y, const T& z) noexcept
+		{
+			return mat::compose(mat::rotationX(x), mat::compose(mat::rotationY(y), mat::rotationZ(y)));
 		}
 
 		template<typename T>
@@ -372,44 +371,18 @@ namespace core
 		template<typename T, typename... Ts>
 		constexpr auto pointAt(const std::tuple<Ts...>& pos, const std::tuple<Ts...>& target, const std::tuple<Ts...>& up) noexcept requires (sizeof...(Ts) == 3) or (sizeof...(Ts) == 4)
 		{
-			auto newForward = apply<std::minus<>>(target, pos);
-			auto newForwardNormalized = normalize(newForward);
+			auto newForward = vec::normalize(vec::apply<std::minus<>>(target, pos));
 
-			auto a = apply<std::multiplies<>>(newForwardNormalized, dot(up, newForwardNormalized));
-			auto newUp = apply<std::minus<>>(up, a);
-			auto newUpNormalized = normalize(newUp);
+			auto newUp = vec::normalize(vec::apply<std::minus<>>(up, vec::apply<std::multiplies<>>(newForward, vec::dot(up, newForward))));
 
-			auto newRight = cross(newUpNormalized, newForwardNormalized);
-
-			matrix<4, T> mat;
-
-			mat[0][0] = std::get<0>(newRight);
-			mat[0][1] = std::get<1>(newRight);
-			mat[0][2] = std::get<2>(newRight);
-			mat[0][3] = 0.0f;
-
-			mat[1][0] = std::get<0>(newUpNormalized);
-			mat[1][1] = std::get<1>(newUpNormalized);
-			mat[1][2] = std::get<2>(newUpNormalized);
-			mat[1][3] = 0.0f;
-
-			mat[2][0] = std::get<0>(newForwardNormalized);
-			mat[2][1] = std::get<1>(newForwardNormalized);
-			mat[2][2] = std::get<2>(newForwardNormalized);
-			mat[2][3] = 0.0f;
-
-			mat[3][0] = std::get<0>(pos);
-			mat[3][1] = std::get<1>(pos);
-			mat[3][2] = std::get<2>(pos);
-			mat[3][3] = 1.0f;
-
-			return mat;
+			auto newRight = vec::cross(newUp, newForward);
 
 			return matrix<4, T>
 			{
-				std::get<0>(newRight), std::get<1>(newRight), std::get<2>(newRight), 0.0f,
-				std::get<0.(newUpNormalized), std::get<1>(newUpNormalized), std::get<2>(newUpNormalized), 0.0f,
-
+				std::get<0>(newRight),   std::get<1>(newRight),   std::get<2>(newRight),   0.0f,
+				std::get<0>(newUp),      std::get<1>(newUp),      std::get<2>(newUp),      0.0f,
+				std::get<0>(newForward), std::get<1>(newForward), std::get<2>(newForward), 0.0f,
+				std::get<0>(pos),        std::get<1>(pos),        std::get<2>(pos),        1.0f
 			};
 		}
 	}
@@ -445,8 +418,8 @@ std::ostream& operator<<(std::ostream& stream, const std::tuple<Ts...>& vec) noe
 	[&] <std::size_t... i>(std::index_sequence<i...>)
 	{
 		(( stream << std::get<i>(vec) << ", " ) , ...);
-	} (std::make_index_sequence<(sizeof...(Ts) - 1)>{});
-
+	} 
+	(std::make_index_sequence<(sizeof...(Ts) - 1)>{});
 
 	stream << std::get<(sizeof...(Ts) - 1)>(vec) << " ]";
 
@@ -458,12 +431,16 @@ int main()
 {
 	using namespace core;
 
-	constexpr int4x4 a = { 2, 3, 1, 4, 1, 4, 5, 8, 5, 1, 4, 5, 4, 2, 7, 5 };
-	constexpr int4 b = { 2, 5, 7, 3 };
+	//constexpr int4x4 a = { 2, 3, 1, 4, 1, 4, 5, 8, 5, 1, 4, 5, 4, 2, 7, 5 };
+	//constexpr int4 b = { 2, 5, 7, 3 };
+	//
+	//constexpr int4 c = vec::mul(b, a);
+	//
+	//std::cout << c << std::endl;
 
-	constexpr int4 c = vec::mul(b, a);
+	constexpr float4x4 a = mat::rotationXYZ<float>(std::pi_t, std::pi_t, std::pi_t);
 
-	std::cout << c << std::endl;
+	std::cout << a << std::endl;
 
 	return 0;
 }
