@@ -6,6 +6,8 @@
 #include <type_traits>
 #include <array>
 #include <cmath>
+#include <fstream>
+#include <string>
 
 #ifndef __cpp_lib_concepts
 #define __cpp_lib_concepts
@@ -13,6 +15,8 @@
 #endif
 
 #include "gcem.hpp"
+
+
 
 namespace std
 {
@@ -54,6 +58,43 @@ namespace std
 		constexpr auto get_array = [](auto&& ... x) { return std::array{ std::forward<decltype(x)>(x) ... }; };
 		return std::apply(get_array, std::forward<tuple_t>(tuple));
 	}
+
+	template<typename x_Tuple, std::size_t... x_index>
+	constexpr auto make_tuple_helper(x_Tuple const& other, std::index_sequence<x_index...>)
+	{
+		return std::make_tuple(std::get<x_index>(other)...);
+	}
+
+	template<typename... x_Field>
+	constexpr auto flatten(std::tuple<x_Field...> const& other)
+	{
+		return std::make_tuple_helper(other, std::make_index_sequence < sizeof...(x_Field) - std::size_t{ 1 } > {});
+	}
+
+	template<>
+	constexpr auto flatten(std::tuple<> const& other)
+	{
+		return other;
+	}
+
+	auto count_lines(std::string&& filepath) noexcept
+	{
+		std::size_t numLines = static_cast<std::size_t>(0);
+		std::ifstream inFile(std::move(filepath));
+
+		std::string lineStr;
+
+		while (std::getline(inFile, lineStr))
+		{
+			++numLines;
+		}
+
+		return numLines;
+	}
+	
+
+	template <typename T, typename ...Ts>
+	concept are_same = std::conjunction_v<std::is_same<T, Ts>...>;
 }
 
 namespace core
@@ -87,6 +128,32 @@ namespace core
 	using double2 = std::tuple<std::double_t, std::double_t>;
 	using double3 = std::tuple<std::double_t, std::double_t, std::double_t>;
 	using double4 = std::tuple<std::double_t, std::double_t, std::double_t, std::double_t>;
+	
+	//define primitive type aliases
+	template<typename T>
+	struct Triangle
+	{
+		T p1, p2, p3;
+	};
+
+	template<typename T>
+	struct Quad
+	{
+		T p1, p2, p3, p4;
+	};
+
+	//define mesh type aliases
+	template<std::size_t S>
+	using mesh3 = std::array<Triangle, S>;
+
+	template<std::size_t S>
+	using mesh4 = std::array<Quad, S>;
+	
+
+	enum class mod
+	{
+		add, remove
+	};
 
 	namespace trig
 	{
@@ -117,17 +184,31 @@ namespace core
 
 	namespace vec
 	{
+		template<mod op, typename T = std::int_t, typename... Ts>
+		constexpr auto modify(const std::tuple<Ts...>& vec, T&& val = 0) noexcept requires std::are_same<T, Ts...>
+		{
+			if constexpr (op == mod::add)
+			{
+				return std::tuple_cat(vec, std::make_tuple(val));
+			}
+
+			if constexpr (op == mod::remove)
+			{
+				return std::flatten(vec);
+			}
+		}
+		
 		template<typename binaryop = std::multiplies<void>, typename T, typename... Ts>
 		constexpr auto apply(const std::tuple<Ts...>& vec, T&& operand) noexcept
 		{
 			std::tuple<Ts...> outVec;
-
+			
 			[&]<std::size_t... i>(std::index_sequence<i...>)
 			{
 				((std::get<i>(outVec) = binaryop{}(std::get<i>(vec), operand)) , ...);
 			}
 			(std::make_index_sequence<sizeof...(Ts)>{});
-
+			
 			return outVec;
 		}
 
@@ -245,7 +326,7 @@ namespace core
 		template<typename T, std::size_t S>
 		constexpr auto compose(const matrix<S, T>& m1, const matrix<S, T>& m2) noexcept
 		{
-			matrix<S, T> m3 = {};
+			matrix<S, T> mat = {};
 
 			for (auto i = 0; i < S; i++)
 			{
@@ -258,11 +339,11 @@ namespace core
 						sum += m1[i][k] * m2[k][j];
 					}
 
-					m3[i][j] = sum;
+					mat[i][j] = sum;
 				}
 			}
 
-			return m3;
+			return mat;
 		}
 
 		template<std::size_t S, typename T>
@@ -279,54 +360,39 @@ namespace core
 		}
 
 		template<typename T>
-		constexpr auto rotationX(T&& angle) noexcept
+		constexpr auto rotationX(const T& angle) noexcept
 		{
-			matrix<4, T> mat = {};
-
-			mat[0][0] = 1.0f;
-			mat[1][1] = gcem::cos(angle);
-			mat[1][2] = gcem::sin(angle);
-			mat[2][1] = -gcem::sin(angle);
-			mat[2][2] = gcem::cos(angle);
-			mat[3][3] = 1.0f;
-
-			return mat;
+			return matrix<4, T>
+			{
+				(T)1.0L, (T)0.0L, (T)0.0L, (T)0.0L,
+				(T)0.0L, gcem::cos(angle), -gcem::sin(angle), (T)0.0L,
+				(T)0.0L, gcem::sin(angle), gcem::cos(angle), (T)0.0L,
+				(T)0.0L, (T)0.0L, (T)0.0L, (T)1.0L
+			};
 		}
 
 		template<typename T>
-		constexpr auto rotationY(T&& angle) noexcept
+		constexpr auto rotationY(const T& angle) noexcept
 		{
-			matrix<4, T> mat = {};
-
-			mat[0][0] = gcem::cos(angle);
-			mat[0][2] = gcem::sin(angle);
-			mat[2][0] = -gcem::sin(angle);
-			mat[1][1] = 1.0f;
-			mat[2][2] = gcem::cos(angle);
-			mat[3][3] = 1.0f;
-
-			return mat;
+			return matrix<4, T>
+			{
+				gcem::cos(angle), (T)0.0L, gcem::sin(angle), (T)0.0L,
+				(T)0.0L, (T)1.0L, (T)0.0L, (T)0.0L,
+				-gcem::sin(angle), (T)0.0L, gcem::cos(angle), (T)0.0L,
+				(T)0.0L, (T)0.0L, (T)0.0L, (T)1.0L
+			};
 		}
 
 		template<typename T>
-		constexpr auto rotationZ(T&& angle) noexcept
+		constexpr auto rotationZ(const T& angle) noexcept
 		{
-			matrix<4, T> mat = {};
-
-			mat[0][0] = gcem::cos(angle);
-			mat[0][1] = gcem::sin(angle);
-			mat[1][0] = -gcem::sin(angle);
-			mat[1][1] = gcem::cos(angle);
-			mat[2][2] = 1.0f;
-			mat[3][3] = 1.0f;
-
-			return mat;
-		}
-
-		template<typename T>
-		constexpr auto rotationXYZ(T&& x, T&& y, T&& z) noexcept
-		{
-			return mat::compose(mat::rotationX(std::move(x)), mat::compose(mat::rotationY(std::move(y)), mat::rotationZ(std::move(z))));
+			return matrix<4, T>
+			{
+				gcem::cos(angle), gcem::sin(angle), (T)0.0L, (T)0.0L,
+				gcem::sin(angle), gcem::cos(angle), (T)0.0L, (T)0.0L,
+				(T)0.0L, (T)0.0L, (T)1.0L, (T)0.0L,
+				(T)0.0L, (T)0.0L, (T)0.0L, (T)1.0L
+			};
 		}
 
 		template<typename T>
@@ -338,34 +404,27 @@ namespace core
 		template<typename T>
 		constexpr auto translation(T&& x, T&& y, T&& z) noexcept
 		{
-			matrix<4, T> mat;
-
-			mat[0][0] = 1.0f;
-			mat[1][1] = 1.0f;
-			mat[2][2] = 1.0f;
-			mat[3][3] = 1.0f;
-			mat[3][0] = x;
-			mat[3][1] = y;
-			mat[3][2] = z;
-
-			return mat;
+			return matrix<4, T>
+			{
+				(T)1.0L, (T)0.0L, (T)0.0L, (T)0.0L,
+				(T)0.0L, (T)1.0L, (T)0.0L, (T)0.0L,
+				(T)0.0L, (T)0.0L, (T)1.0L, (T)0.0L,
+				x, y, z, (T)1.0L
+			};
 		}
 
 		template<typename T>
 		constexpr auto projection(T&& fov, T&& aspectRatio, T&& near, T&& far) noexcept requires std::floating_point<T>
 		{
-			T fovRad = (T)1 / gcem::tan(fov * (T)0.5 / (T)180 * (T)3.14159265359);
+			T fovRad = static_cast<T>(1) / gcem::tan(trig::radians(fov * static_cast<T>(0.5L)));
 
-			matrix<4, T> mat;
-
-			mat[0][0] = aspectRatio * fovRad;
-			mat[1][1] = fovRad;
-			mat[2][2] = far / (far - near);
-			mat[3][2] = (-far * near) / (far - near);
-			mat[2][3] = 1.0f;
-			mat[3][3] = 0.0f;
-
-			return mat;
+			return matrix<4, T>
+			{
+				(aspectRatio * fovRad), (T)0.0L, (T)0.0L, (T)0.0L,
+				(T)0.0L, fovRad, (T)0.0L, (T)0.0L,
+				(T)0.0L, (T)0.0L, (far / (far - near)), (T)1.0L,
+				(T)0.0L, (T)0.0L, ((-far * near) / (far - near)), (T)0.0L
+			};
 		}
 
 		template<typename T, typename... Ts>
@@ -384,6 +443,20 @@ namespace core
 				std::get<0>(newForward), std::get<1>(newForward), std::get<2>(newForward), 0.0f,
 				std::get<0>(pos),        std::get<1>(pos),        std::get<2>(pos),        1.0f
 			};
+		}
+	}
+
+	namespace mesh
+	{
+		
+		
+		template<typename T>
+		constexpr auto make_mesh3(std::string&& filepath) noexcept
+		{
+			std::ifstream f(std::move(filepath));
+			
+
+			if (!f.is_open()) 
 		}
 	}
 }
@@ -413,34 +486,63 @@ std::ostream& operator<<(std::ostream& stream, const core::matrix<S, T>& mat) no
 template<typename... Ts>
 std::ostream& operator<<(std::ostream& stream, const std::tuple<Ts...>& vec) noexcept
 {
-	stream << "[ ";
-	
-	[&] <std::size_t... i>(std::index_sequence<i...>)
+	if constexpr (bool(sizeof...(Ts)))
 	{
-		(( stream << std::get<i>(vec) << ", " ) , ...);
-	} 
-	(std::make_index_sequence<(sizeof...(Ts) - 1)>{});
+		stream << "[ ";
 
-	stream << std::get<(sizeof...(Ts) - 1)>(vec) << " ]";
+		[&] <std::size_t... i>(std::index_sequence<i...>)
+		{
+			((stream << std::get<i>(vec) << ", "), ...);
+		}
+		(std::make_index_sequence<(sizeof...(Ts) - 1)>{});
 
-	return stream;
+		stream << std::get<(sizeof...(Ts) - 1)>(vec) << " ]";
+
+		return stream;
+	}
+
+	else
+	{
+		stream << "[ ]";
+
+		return stream;
+	}
 }
 
 
 int main()
 {
 	using namespace core;
+	using enum mod;
 
-	//constexpr int4x4 a = { 2, 3, 1, 4, 1, 4, 5, 8, 5, 1, 4, 5, 4, 2, 7, 5 };
-	//constexpr int4 b = { 2, 5, 7, 3 };
+	//constexpr auto x = std::pi_t;
+	//constexpr auto y = std::half_pi_t;
+	//constexpr auto z = 0.0f;
 	//
-	//constexpr int4 c = vec::mul(b, a);
 	//
-	//std::cout << c << std::endl;
+	//constexpr float4x4 a = mat::rotationXYZ(x, y, z);
+	//
+	//std::cout << a << std::endl;
 
-	constexpr float4x4 a = mat::rotationXYZ<float>(std::pi_t, std::pi_t, std::pi_t);
+	constexpr int4 a = std::make_tuple(4, 5, 6, 1);
 
 	std::cout << a << std::endl;
+
+	constexpr auto b = vec::modify<remove>(a);
+
+	std::cout << b << std::endl;
+
+	constexpr auto c = vec::modify<remove>(b);
+
+	std::cout << c << std::endl;
+
+	constexpr auto d = vec::modify<remove>(c);
+	
+	std::cout << d << std::endl;
+
+	constexpr auto e = vec::modify<remove>(d);
+
+	std::cout << e << std::endl;
 
 	return 0;
 }
