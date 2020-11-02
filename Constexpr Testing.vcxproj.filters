@@ -13,11 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Source.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+    <Filter Include="Modules">
+      <UniqueIdentifier>{4177a30e-0e23-4ee0-9385-57136c1afdef}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="abs.hpp">
@@ -206,5 +204,28 @@
     <ClInclude Include="trunc.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="vector.ixx">
+      <Filter>Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="stdex.ixx">
+      <Filter>Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="matrix.ixx">
+      <Filter>Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="trig.ixx">
+      <Filter>Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="mesh.ixx">
+      <Filter>Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="core.ixx">
+      <Filter>Modules</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
