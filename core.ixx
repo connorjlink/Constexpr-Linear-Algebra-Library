@@ -4,7 +4,7 @@ module;
 #include <cstddef>
 export module core;
 
-export namespace core
+export namespace cla::core
 {
 	//define the matrix alias to a c++ array of arrays
 	template<std::size_t N, typename T>

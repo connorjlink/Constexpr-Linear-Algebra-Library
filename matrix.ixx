@@ -1,18 +1,21 @@
 module;
 #include <algorithm>
+#include <functional>
+#include <array>
 #include <tuple>
 #include "gcem.hpp"
 export module matrix;
 
+import core;
 import trig;
 import vector;
 
 export namespace cla::mat
 {
 	template<typename binaryop = std::multiplies<void>, typename T, std::size_t S>
-	constexpr auto apply(const std::array<std::array<T, S>, S>& mat1, T&& operand)
+	constexpr auto apply(const std::array<std::array<T, S>, S>& mat1, const T& operand)
 	{
-		std::array<std::array<T, S>, S> mat;
+		cla::core::matrix<T, S> mat;
 
 		for (auto i = 0; i < S; ++i)
 		{
@@ -132,9 +135,9 @@ export namespace cla::mat
 	}
 
 	template<typename T>
-	constexpr auto projection(T&& fov, T&& aspectRatio, T&& near, T&& far) noexcept
+	constexpr auto projection(const T& fov, const T& aspectRatio, const T& near, const T& far) noexcept
 	{
-		T fovRad = static_cast<T>(1) / gcem::tan(core::trig::radians(fov * static_cast<T>(0.5L)));
+		T fovRad = static_cast<T>(1) / gcem::tan(cla::trig::radians(fov * static_cast<T>(0.5L)));
 
 		return std::array<std::array<T, 4>, 4>
 		{

@@ -18,9 +18,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="abs.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="acos.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -48,12 +45,6 @@
     <ClInclude Include="binomial_coef.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ceil.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="copysign.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="cos.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -75,34 +66,10 @@
     <ClInclude Include="factorial.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="find_exponent.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="find_fraction.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="find_whole.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="floor.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="fmod.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="gauss_legendre_30.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="gauss_legendre_50.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="gcd.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="gcem.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="gcem_options.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="incomplete_beta.hpp">
@@ -115,21 +82,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="incomplete_gamma_inv.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="is_even.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="is_finite.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="is_inf.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="is_nan.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="is_odd.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="lbeta.hpp">
@@ -156,40 +108,16 @@
     <ClInclude Include="log2.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mantissa.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="max.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="min.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="neg_zero.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="pow.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pow_integral.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="round.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sgn.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="signbit.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="sin.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="sinh.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sqrt.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="tan.hpp">
@@ -201,7 +129,7 @@
     <ClInclude Include="tgamma.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="trunc.hpp">
+    <ClInclude Include="GameEngine.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

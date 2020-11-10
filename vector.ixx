@@ -8,22 +8,20 @@ export module vector;
 
 import stdex;
 
+export constexpr int add = 0
+export constexpr int remove = 1;
+
 export namespace cla::vec
 {
-	enum class mod
-	{
-		add, remove
-	};
-
-	template<mod op, typename T = int, typename... Ts>
+	template<int op, typename T = int, typename... Ts>
 	constexpr auto modify(const std::tuple<Ts...>& vec, T&& val = 0) noexcept requires std::are_same<T, Ts...>
 	{
-		if constexpr (op == mod::add)
+		if constexpr (op == add)
 		{
 			return std::tuple_cat(vec, std::make_tuple(val));
 		}
 
-		if constexpr (op == mod::remove)
+		if constexpr (op == remove)
 		{
 			return std::flatten(vec);
 		}
@@ -48,7 +46,7 @@ export namespace cla::vec
 	{
 		std::tuple<Ts...> outVec;
 
-		[&] <std::size_t... i>(std::index_sequence<i...>)
+		[&]<std::size_t... i>(std::index_sequence<i...>)
 		{
 			((std::get<i>(outVec) = binaryop{}(std::get<i>(vec1), std::get<i>(vec2))), ...);
 		}
@@ -98,6 +96,19 @@ export namespace cla::vec
 			((std::get<0>(vec1) * std::get<1>(vec2)) - (std::get<1>(vec1) * std::get<0>(vec2)))
 		);
 	}
+
+	template<typename... Ts>
+	constexpr auto cross(const std::tuple<Ts...>& vec1, const std::tuple<Ts...>& vec2) noexcept requires (sizeof...(Ts) == 4)
+	{
+		return std::make_tuple
+		(
+			((std::get<1>(vec1) * std::get<2>(vec2)) - (std::get<2>(vec1) * std::get<1>(vec2))),
+			((std::get<2>(vec1) * std::get<0>(vec2)) - (std::get<0>(vec1) * std::get<2>(vec2))),
+			((std::get<0>(vec1) * std::get<1>(vec2)) - (std::get<1>(vec1) * std::get<0>(vec2))),
+			1.0f
+		);
+	}
+
 
 	template<typename T, std::size_t S, typename... Ts>
 	constexpr auto mul(const std::tuple<Ts...>& vec, const std::array<std::array<T, S>, S>& mat) noexcept requires (S == sizeof...(Ts))

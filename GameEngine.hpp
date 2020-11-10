@@ -1,8 +1,4 @@
-﻿#ifndef core_PGE_DEF
-#define core_PGE_DEF
-
-
-#include "core.hpp"
+﻿#pragma once
 
 #include <cmath>
 #include <cstdint>
@@ -26,7 +22,6 @@
 #include <type_traits>
 
 
-
 #define NOMINMAX
 #define VC_EXTRALEAN
 #define WIN32_LEAN_AND_MEAN
@@ -39,14 +34,11 @@
 #include <dwmapi.h>
 #include <GL/gl.h>
 
+
 #pragma comment(lib, "user32.lib")
 #pragma comment(lib, "Shlwapi.lib")
 #pragma comment(lib, "Dwmapi.lib")
 #pragma comment(lib, "opengl32.lib")
-
-
-
-
 
 namespace core
 {
@@ -66,7 +58,7 @@ namespace core
 			{
 				T z = T{ 1 };
 
-				for (std::int_t i = 0; i < 10; ++i)
+				for (int i = 0; i < 10; ++i)
 				{
 					z -= (z * z - arg) / (2 * z);
 				}
@@ -103,12 +95,12 @@ namespace core
 		constexpr Pixel() noexcept : r(), g(), b(), a(nDefaultAlpha) {}
 		constexpr Pixel(std::uint8_t red, std::uint8_t green, std::uint8_t blue, std::uint8_t alpha = nDefaultAlpha) noexcept : n(red | (green << 8) | (blue << 16) | (alpha << 24)) {}
 		constexpr Pixel(std::uint32_t p) noexcept : n(p) {}
-		constexpr std::bool_t operator==(const Pixel& p) const noexcept { return n == p.n; }
-		constexpr std::bool_t operator!=(const Pixel& p) const noexcept { return n != p.n; }
+		constexpr bool operator==(const Pixel& p) const noexcept { return n == p.n; }
+		constexpr bool operator!=(const Pixel& p) const noexcept { return n != p.n; }
 	};
 
 	[[nodiscard]]
-	constexpr Pixel PixelF(std::float_t red, std::float_t green, std::float_t blue, std::float_t alpha = 1.0f) noexcept 
+	constexpr Pixel PixelF(float red, float green, float blue, float alpha = 1.0f) noexcept 
 	{
 		return Pixel{ std::uint8_t(red * 255.f), std::uint8_t(green * 255.f), std::uint8_t(blue * 255.f), std::uint8_t(alpha * 255.f) };
 	}
@@ -169,90 +161,61 @@ namespace core
 
 		constexpr auto operator<=>(const v2d_generic& rhs) const noexcept = default;
 
-		constexpr std::bool_t operator == (const v2d_generic& rhs) const noexcept { return (this->x == rhs.x && this->y == rhs.y); }
-		constexpr std::bool_t operator != (const v2d_generic& rhs) const noexcept { return (this->x != rhs.x || this->y != rhs.y); }
+		constexpr bool operator == (const v2d_generic& rhs) const noexcept { return (this->x == rhs.x && this->y == rhs.y); }
+		constexpr bool operator != (const v2d_generic& rhs) const noexcept { return (this->x != rhs.x || this->y != rhs.y); }
 
 		const std::string str() const { return std::string("(") + std::to_string(this->x) + "," + std::to_string(this->y) + ")"; }
 		friend std::ostream& operator << (std::ostream& os, const v2d_generic& rhs) { os << rhs.str(); return os; }
 		constexpr operator v2d_generic<std::int32_t>() const noexcept { return { static_cast<std::int32_t>(this->x), static_cast<std::int32_t>(this->y) }; }
-		constexpr operator v2d_generic<std::float_t>() const noexcept { return { static_cast<std::float_t>(this->x), static_cast<std::float_t>(this->y) }; }
-		constexpr operator v2d_generic<std::double_t>() const noexcept { return { static_cast<std::double_t>(this->x), static_cast<std::double_t>(this->y) }; }
+		constexpr operator v2d_generic<float>() const noexcept { return { static_cast<float>(this->x), static_cast<float>(this->y) }; }
+		constexpr operator v2d_generic<double>() const noexcept { return { static_cast<double>(this->x), static_cast<double>(this->y) }; }
 	};
 
 
-	template<class T> constexpr v2d_generic<T> operator * (const std::float_t& lhs, const v2d_generic<T>& rhs) noexcept
+	template<class T> constexpr v2d_generic<T> operator * (const float& lhs, const v2d_generic<T>& rhs) noexcept
 	{
-		return v2d_generic<T>((T)(lhs * (std::float_t)rhs.x), (T)(lhs * (std::float_t)rhs.y));
+		return v2d_generic<T>((T)(lhs * (float)rhs.x), (T)(lhs * (float)rhs.y));
 	}
-	template<class T> constexpr v2d_generic<T> operator * (const std::double_t& lhs, const v2d_generic<T>& rhs) noexcept
+	template<class T> constexpr v2d_generic<T> operator * (const double& lhs, const v2d_generic<T>& rhs) noexcept
 	{
-		return v2d_generic<T>((T)(lhs * (std::double_t)rhs.x), (T)(lhs * (std::double_t)rhs.y));
+		return v2d_generic<T>((T)(lhs * (double)rhs.x), (T)(lhs * (double)rhs.y));
 	}
-	template<class T> constexpr v2d_generic<T> operator * (const std::int_t& lhs, const v2d_generic<T>& rhs) noexcept
+	template<class T> constexpr v2d_generic<T> operator * (const int& lhs, const v2d_generic<T>& rhs) noexcept
 	{
-		return v2d_generic<T>((T)(lhs * (std::int_t)rhs.x), (T)(lhs * (std::int_t)rhs.y));
+		return v2d_generic<T>((T)(lhs * (int)rhs.x), (T)(lhs * (int)rhs.y));
 	}
-	template<class T> constexpr v2d_generic<T> operator / (const std::float_t& lhs, const v2d_generic<T>& rhs) noexcept
+	template<class T> constexpr v2d_generic<T> operator / (const float& lhs, const v2d_generic<T>& rhs) noexcept
 	{
-		return v2d_generic<T>((T)(lhs / (std::float_t)rhs.x), (T)(lhs / (std::float_t)rhs.y));
+		return v2d_generic<T>((T)(lhs / (float)rhs.x), (T)(lhs / (float)rhs.y));
 	}
-	template<class T> constexpr v2d_generic<T> operator / (const std::double_t& lhs, const v2d_generic<T>& rhs) noexcept
+	template<class T> constexpr v2d_generic<T> operator / (const double& lhs, const v2d_generic<T>& rhs) noexcept
 	{
-		return v2d_generic<T>((T)(lhs / (std::double_t)rhs.x), (T)(lhs / (std::double_t)rhs.y));
+		return v2d_generic<T>((T)(lhs / (double)rhs.x), (T)(lhs / (double)rhs.y));
 	}
-	template<class T> constexpr v2d_generic<T> operator / (const std::int_t& lhs, const v2d_generic<T>& rhs) noexcept
+	template<class T> constexpr v2d_generic<T> operator / (const int& lhs, const v2d_generic<T>& rhs) noexcept
 	{
-		return v2d_generic<T>((T)(lhs / (std::int_t)rhs.x), (T)(lhs / (std::int_t)rhs.y));
+		return v2d_generic<T>((T)(lhs / (int)rhs.x), (T)(lhs / (int)rhs.y));
 	}
 
 	using vi2d = v2d_generic<std::int32_t>;
 	using vu2d = v2d_generic<std::uint32_t>;
-	using vf2d = v2d_generic<std::float_t>;
-	using vd2d = v2d_generic<std::double_t>;
-	using vl2d = v2d_generic<std::long_double_t>;
+	using vf2d = v2d_generic<float>;
+	using vd2d = v2d_generic<double>;
+	using vl2d = v2d_generic<long double>;
 
 	struct HWButton
 	{
-		std::bool_t bPressed = false;
-		std::bool_t bReleased = false;
-		std::bool_t bHeld = false;
+		bool bPressed = false;
+		bool bReleased = false;
+		bool bHeld = false;
 	};
-
-
-
-	struct ResourceBuffer : public std::streambuf
-	{
-		ResourceBuffer(std::ifstream& ifs, std::uint32_t offset, std::uint32_t size);
-		std::vector<std::char_t> vMemory;
-	};
-
-	class ResourcePack : public std::streambuf
-	{
-	public:
-		ResourcePack();
-		~ResourcePack();
-		std::bool_t AddFile(const std::string& sFile);
-		std::bool_t LoadPack(const std::string& sFile, const std::string& sKey);
-		std::bool_t SavePack(const std::string& sFile, const std::string& sKey);
-		ResourceBuffer GetFileBuffer(const std::string& sFile);
-		std::bool_t Loaded();
-	private:
-		struct sResourceFile { std::uint32_t nSize; std::uint32_t nOffset; };
-		std::map<std::string, sResourceFile> mapFiles;
-		std::ifstream baseFile;
-		std::vector<std::char_t> scramble(const std::vector<std::char_t>& data, const std::string& key);
-		std::string makeposix(const std::string& path);
-	};
-
-
-
 
 	class Sprite
 	{
 	public:
 		constexpr Sprite() noexcept : pColData(), width(), height() {}
 
-		Sprite(const std::string& sImageFile, core::ResourcePack* pack = nullptr);
+		Sprite(const std::string& sImageFile);
 
 		Sprite(std::int32_t w, std::int32_t h) : width(w), height(h), pColData{ new Pixel[w * h] } {}
 		
@@ -266,9 +229,7 @@ namespace core
 		~Sprite() noexcept { delete[] pColData; }
 
 	public:
-		core::rcode LoadFromFile(const std::string& sImageFile, core::ResourcePack* pack = nullptr);
-		core::rcode LoadFromPGESprFile(const std::string& sImageFile, core::ResourcePack* pack = nullptr);
-		core::rcode SaveToPGESprFile(const std::string& sImageFile) const;
+		core::rcode LoadFromFile(const std::string& sImageFile);
 
 	public:
 		std::int32_t width = 0;
@@ -278,11 +239,11 @@ namespace core
 
 	public:
 		constexpr void SetSampleMode(core::Sprite::Mode mode = core::Sprite::Mode::NORMAL) noexcept { modeSample = mode; }
-		constexpr std::bool_t  SetPixel(std::int32_t x, std::int32_t y, Pixel p) noexcept;
+		constexpr bool  SetPixel(std::int32_t x, std::int32_t y, Pixel p) noexcept;
 		constexpr Pixel GetPixel(const core::vi2d& a) const noexcept { return GetPixel(a.x, a.y); }
-		constexpr std::bool_t  SetPixel(const core::vi2d& a, Pixel p) noexcept { return SetPixel(a.x, a.y, p); }
-		constexpr Pixel Sample(std::float_t x, std::float_t y) const noexcept;
-		Pixel SampleBL(std::float_t u, std::float_t v) const noexcept;
+		constexpr bool  SetPixel(const core::vi2d& a, Pixel p) noexcept { return SetPixel(a.x, a.y, p); }
+		constexpr Pixel Sample(float x, float y) const noexcept;
+		Pixel SampleBL(float u, float v) const noexcept;
 		constexpr const Pixel* GetData() const noexcept { return pColData; }
 		constexpr Pixel* GetData() noexcept { return pColData; }
 		core::Sprite* Duplicate() const;
@@ -312,7 +273,7 @@ namespace core
 	public:
 		Renderable() = default;
 		virtual ~Renderable() = default;
-		core::rcode Load(const std::string& sFile, ResourcePack* pack = nullptr);
+		core::rcode Load(const std::string& sFile);
 		void Create(std::uint32_t width, std::uint32_t height);
 		core::Decal* Decal() const;
 		core::Sprite* Sprite() const;
@@ -329,7 +290,7 @@ namespace core
 		core::Decal* decal = nullptr;
 		core::vf2d pos[4] = { { 0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f} };
 		core::vf2d uv[4] = { { 0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 1.0f}, {1.0f, 0.0f} };
-		std::float_t w[4] = { 1, 1, 1, 1 };
+		float w[4] = { 1, 1, 1, 1 };
 		core::Pixel tint[4] = { core::WHITE, core::WHITE, core::WHITE, core::WHITE };;
 	};
 
@@ -338,8 +299,8 @@ namespace core
 	{
 		core::vf2d vOffset = { 0, 0 };
 		core::vf2d vScale = { 1, 1 };
-		std::bool_t bShow = false;
-		std::bool_t bUpdate = false;
+		bool bShow = false;
+		bool bUpdate = false;
 		core::Sprite* pDrawTarget = nullptr;
 		std::uint32_t nResID = 0;
 		std::vector<DecalInstance> vecDecalInstance;
@@ -353,15 +314,15 @@ namespace core
 
 	
 		
-	core::rcode Construct(std::int32_t screen_w, std::int32_t screen_h, std::int32_t pixel_w, std::int32_t pixel_h, std::bool_t full_screen = false, std::bool_t vsync = false, std::bool_t cohesion = false);
+	core::rcode Construct(std::int32_t screen_w, std::int32_t screen_h, std::int32_t pixel_w, std::int32_t pixel_h, bool full_screen = false, bool vsync = false, bool cohesion = false);
 	core::rcode Start();
 
-	std::bool_t OnUserCreate();
-	std::bool_t OnUserUpdate(std::float_t fElapsedTime);
-	std::bool_t OnUserDestroy();
+	bool OnUserCreate();
+	bool OnUserUpdate(float fElapsedTime);
+	bool OnUserDestroy();
 
 	
-	std::bool_t IsFocused() noexcept;
+	bool IsFocused() noexcept;
 	HWButton GetKey(Key k) noexcept;
 	HWButton GetMouse(std::uint32_t b) noexcept;
 	std::int32_t GetMouseX() noexcept;
@@ -377,19 +338,19 @@ namespace core
 	std::int32_t GetDrawTargetWidth() noexcept;
 	std::int32_t GetDrawTargetHeight() noexcept;
 	core::Sprite* GetDrawTarget() noexcept;
-	void SetScreenSize(std::int_t w, std::int_t h);
+	void SetScreenSize(int w, int h);
 	void SetDrawTarget(Sprite* target) noexcept;
 	std::uint32_t GetFPS() noexcept;
-	std::float_t GetElapsedTime() noexcept;
+	float GetElapsedTime() noexcept;
 	const core::vi2d& GetWindowSize() noexcept;
 	const core::vi2d& GetPixelSize() noexcept;
 	const core::vi2d& GetScreenPixelSize() noexcept;
 
 	void SetDrawTarget(std::uint8_t layer) noexcept;
 	void SetLayerOffset(std::uint8_t layer, const core::vf2d& offset) noexcept;
-	void SetLayerOffset(std::uint8_t layer, std::float_t x, std::float_t y) noexcept;
+	void SetLayerOffset(std::uint8_t layer, float x, float y) noexcept;
 	void SetLayerScale(std::uint8_t layer, const core::vf2d& scale) noexcept;
-	void SetLayerScale(std::uint8_t layer, std::float_t x, std::float_t y) noexcept;
+	void SetLayerScale(std::uint8_t layer, float x, float y) noexcept;
 	void SetLayerTint(std::uint8_t layer, const core::Pixel& tint) noexcept;
 	void SetLayerCustomRenderFunction(std::uint8_t layer, std::function<void()> f) noexcept;
 
@@ -398,11 +359,11 @@ namespace core
 
 	void SetPixelMode(Pixel::Mode m);
 	Pixel::Mode GetPixelMode();
-	void SetPixelMode(std::function<core::Pixel(const std::int_t x, const std::int_t y, const core::Pixel& pSource, const core::Pixel& pDest)> pixelMode);
-	void SetPixelBlend(std::float_t fBlend);
+	void SetPixelMode(std::function<core::Pixel(const int x, const int y, const core::Pixel& pSource, const core::Pixel& pDest)> pixelMode);
+	void SetPixelBlend(float fBlend);
 
-	std::bool_t Draw(std::int32_t x, std::int32_t y, Pixel p = core::WHITE);
-	std::bool_t Draw(const core::vi2d& pos, Pixel p = core::WHITE);
+	bool Draw(std::int32_t x, std::int32_t y, Pixel p = core::WHITE);
+	bool Draw(const core::vi2d& pos, Pixel p = core::WHITE);
 	void DrawLine(std::int32_t x1, std::int32_t y1, std::int32_t x2, std::int32_t y2, Pixel p = core::WHITE, std::uint32_t pattern = 0xFFFFFFFF);
 	void DrawLine(const core::vi2d& pos1, const core::vi2d& pos2, Pixel p = core::WHITE, std::uint32_t pattern = 0xFFFFFFFF);
 	void DrawCircle(std::int32_t x, std::int32_t y, std::int32_t radius, Pixel p = core::WHITE, std::uint8_t mask = 0xFF);
@@ -432,8 +393,8 @@ namespace core
 	void DrawPartialWarpedDecal(core::Decal* decal, const core::vf2d(&pos)[4], const core::vf2d& source_pos, const core::vf2d& source_size, const core::Pixel& tint = core::WHITE);
 	void DrawPartialWarpedDecal(core::Decal* decal, const core::vf2d* pos, const core::vf2d& source_pos, const core::vf2d& source_size, const core::Pixel& tint = core::WHITE);
 	void DrawPartialWarpedDecal(core::Decal* decal, const std::array<core::vf2d, 4>& pos, const core::vf2d& source_pos, const core::vf2d& source_size, const core::Pixel& tint = core::WHITE);
-	void DrawRotatedDecal(const core::vf2d& pos, core::Decal* decal, const std::float_t fAngle, const core::vf2d& center = { 0.0f, 0.0f }, const core::vf2d& scale = { 1.0f,1.0f }, const core::Pixel& tint = core::WHITE);
-	void DrawPartialRotatedDecal(const core::vf2d& pos, core::Decal* decal, const std::float_t fAngle, const core::vf2d& center, const core::vf2d& source_pos, const core::vf2d& source_size, const core::vf2d& scale = { 1.0f, 1.0f }, const core::Pixel& tint = core::WHITE);
+	void DrawRotatedDecal(const core::vf2d& pos, core::Decal* decal, const float fAngle, const core::vf2d& center = { 0.0f, 0.0f }, const core::vf2d& scale = { 1.0f,1.0f }, const core::Pixel& tint = core::WHITE);
+	void DrawPartialRotatedDecal(const core::vf2d& pos, core::Decal* decal, const float fAngle, const core::vf2d& center, const core::vf2d& source_pos, const core::vf2d& source_size, const core::vf2d& scale = { 1.0f, 1.0f }, const core::Pixel& tint = core::WHITE);
 	void DrawStringDecal(const core::vf2d& pos, const std::string& sText, const Pixel col = core::WHITE, const core::vf2d& scale = { 1.0f, 1.0f });
 	void FillRectDecal(const core::vf2d& pos, const core::vf2d& size, const core::Pixel col = core::WHITE);
 	void GradientFillRectDecal(const core::vf2d& pos, const core::vf2d& size, const core::Pixel colTL, const core::Pixel colBL, const core::Pixel colBR, const core::Pixel colTR);
@@ -443,12 +404,12 @@ namespace core
 	void DrawString(const core::vi2d& pos, const std::string& sText, Pixel col = core::WHITE, std::uint32_t scale = 1);
 	core::vi2d GetTextSize(const std::string& s);
 	void Clear(Pixel p);
-	void ClearBuffer(Pixel p, std::bool_t bDepth = true);
+	void ClearBuffer(Pixel p, bool bDepth = true);
 
 	std::string sAppName;
 	Sprite* pDrawTarget = nullptr;
 	Pixel::Mode nPixelMode = Pixel::NORMAL;
-	std::float_t fBlendFactor = 1.0f;
+	float fBlendFactor = 1.0f;
 	core::vi2d vScreenSize = { 256, 240 };
 	core::vf2d vInvScreenSize = { 1.0f / 256.0f, 1.0f / 240.0f };
 	core::vi2d vPixelSize = { 4, 4 };
@@ -461,35 +422,35 @@ namespace core
 	core::vi2d vWindowSize = { 0, 0 };
 	core::vi2d vViewPos = { 0, 0 };
 	core::vi2d vViewSize = { 0,0 };
-	std::bool_t bFullScreen = false;
+	bool bFullScreen = false;
 	core::vf2d vPixel = { 1.0f, 1.0f };
-	std::bool_t bHasInputFocus = false;
-	std::bool_t bHasMouseFocus = false;
-	std::bool_t bEnableVSYNC = false;
-	std::float_t fFrameTimer = 1.0f;
-	std::float_t fLastElapsed = 0.0f;
-	std::int_t nFrameCount = 0;
+	bool bHasInputFocus = false;
+	bool bHasMouseFocus = false;
+	bool bEnableVSYNC = false;
+	float fFrameTimer = 1.0f;
+	float fLastElapsed = 0.0f;
+	int nFrameCount = 0;
 	Sprite* fontSprite = nullptr;
 	Decal* fontDecal = nullptr;
 	Sprite* pDefaultDrawTarget = nullptr;
 	std::vector<LayerDesc> vLayers;
 	std::uint8_t nTargetLayer = 0;
 	std::uint32_t nLastFPS = 0;
-	std::bool_t bPixelCohesion = false;
-	std::function<core::Pixel(const std::int_t x, const std::int_t y, const core::Pixel&, const core::Pixel&)> funcPixelMode;
+	bool bPixelCohesion = false;
+	std::function<core::Pixel(const int x, const int y, const core::Pixel&, const core::Pixel&)> funcPixelMode;
 	std::chrono::time_point<std::chrono::system_clock> m_tp1, m_tp2;
 	HWND core_hWnd = nullptr;
 
-	std::bool_t pKeyNewState[256] = { 0 };
-	std::bool_t pKeyOldState[256] = { 0 };
+	bool pKeyNewState[256] = { 0 };
+	bool pKeyOldState[256] = { 0 };
 	HWButton pKeyboardState[256] = { 0 };
 
-	std::bool_t pMouseNewState[nMouseButtons] = { 0 };
-	std::bool_t pMouseOldState[nMouseButtons] = { 0 };
+	bool pMouseNewState[nMouseButtons] = { 0 };
+	bool pMouseOldState[nMouseButtons] = { 0 };
 	HWButton pMouseState[nMouseButtons] = { 0 };
 
 
-	std::atomic<std::bool_t> bAtomActive;
+	std::atomic<bool> bAtomActive;
 
 	LRESULT CALLBACK core_WindowEvent(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -501,19 +462,19 @@ namespace core
 	void core_ConstructFontSheet();
 	void core_CoreUpdate();
 	void core_PrepareEngine();
-	void core_UpdateMouseState(std::int32_t button, std::bool_t state);
-	void core_UpdateKeyState(std::int32_t key, std::bool_t state);
-	void core_UpdateMouseFocus(std::bool_t state);
-	void core_UpdateKeyFocus(std::bool_t state);
+	void core_UpdateMouseState(std::int32_t button, bool state);
+	void core_UpdateKeyState(std::int32_t key, bool state);
+	void core_UpdateMouseFocus(bool state);
+	void core_UpdateKeyFocus(bool state);
 	void core_Terminate();
 	void core_SetMousePos(std::int32_t x, std::int32_t y) noexcept;
 	vi2d core_nextMousePos;
-	std::bool_t core_hideCursor = false;
+	bool core_hideCursor = false;
 
-	core::rcode LoadImageResource(core::Sprite* spr, const std::string& sImageFile, core::ResourcePack* pack);
+	core::rcode LoadImageResource(core::Sprite* spr, const std::string& sImageFile);
 
 
-	constexpr std::bool_t Sprite::SetPixel(std::int32_t x, std::int32_t y, Pixel p) noexcept
+	constexpr bool Sprite::SetPixel(std::int32_t x, std::int32_t y, Pixel p) noexcept
 	{
 		if (x >= 0 && x < width && y >= 0 && y < height)
 		{
@@ -535,23 +496,20 @@ namespace core
 		else return pColData[math::abs(y % height) * width + math::abs(x % width)];
 	}
 
-	constexpr Pixel Sprite::Sample(std::float_t x, std::float_t y) const noexcept
+	constexpr Pixel Sprite::Sample(float x, float y) const noexcept
 	{
-		const std::int32_t sx = std::min(std::int32_t(x * std::float_t(width)), width - 1);
-		const std::int32_t sy = std::min(std::int32_t(y * std::float_t(height)), height - 1);
+		const std::int32_t sx = std::min(std::int32_t(x * float(width)), width - 1);
+		const std::int32_t sy = std::min(std::int32_t(y * float(height)), height - 1);
 		return GetPixel(sx, sy);
 	}
 }
 
-#endif //end of top #if
+
+#ifdef PGE_APPLICATION
+#undef PGE_APPLICATION
 
 
-
-#ifdef core_PGE_APPLICATION
-#undef core_PGE_APPLICATION
-
-
-typedef std::bool_t(WINAPI wglSwapInterval_t) (std::int_t interval);
+typedef bool(WINAPI wglSwapInterval_t) (int interval);
 static wglSwapInterval_t* wglSwapInterval = nullptr;
 
 using glDeviceContext_t = HDC;
@@ -563,11 +521,11 @@ namespace core
 	glDeviceContext_t glDeviceContext = 0;
 	glRenderContext_t glRenderContext = 0;
 
-	std::bool_t bSync = false;
+	bool bSync = false;
 
 	core::PixelGameEngine* pge = nullptr;
 
-	core::rcode CreateDevice(std::vector<void*> params, std::bool_t bFullScreen, std::bool_t bVSYNC)
+	core::rcode CreateDevice(std::vector<void*> params, bool bFullScreen, bool bVSYNC)
 	{
 		glDeviceContext = GetDC((HWND)(params[0]));
 		PIXELFORMATDESCRIPTOR pfd =
@@ -578,7 +536,7 @@ namespace core
 			PFD_MAIN_PLANE, 0, 0, 0, 0
 		};
 
-		std::int_t pf = 0;
+		int pf = 0;
 		if (!(pf = ChoosePixelFormat(glDeviceContext, &pfd))) return core::FAIL;
 		SetPixelFormat(glDeviceContext, pf, &pfd);
 
@@ -691,9 +649,9 @@ namespace core
 		glBindTexture(GL_TEXTURE_2D, id);
 	}
 
-	void ClearBuffer(core::Pixel p, std::bool_t bDepth)
+	void ClearBuffer(core::Pixel p, bool bDepth)
 	{
-		glClearColor(std::float_t(p.r) / 255.0f, std::float_t(p.g) / 255.0f, std::float_t(p.b) / 255.0f, std::float_t(p.a) / 255.0f);
+		glClearColor(float(p.r) / 255.0f, float(p.g) / 255.0f, float(p.b) / 255.0f, float(p.a) / 255.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		if (bDepth) glClear(GL_DEPTH_BUFFER_BIT);
 	}
@@ -710,26 +668,16 @@ namespace core
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.hpp"
-	core::rcode LoadImageResource(core::Sprite* spr, const std::string& sImageFile, core::ResourcePack* pack)
+	core::rcode LoadImageResource(core::Sprite* spr, const std::string& sImageFile)
 	{
-		static_cast<void>(pack);
-
 		if (!std::filesystem::exists(sImageFile)) return core::rcode::NO_FILE;
 
 		if (spr->pColData != nullptr) delete[] spr->pColData;
 
 		stbi_uc* bytes = nullptr;
 		int w = 0, h = 0, cmp = 0;
-		if (pack != nullptr)
-		{
-			ResourceBuffer rb = pack->GetFileBuffer(sImageFile);
-			bytes = stbi_load_from_memory((unsigned char*)rb.vMemory.data(), static_cast<std::int_t>(rb.vMemory.size()), &w, &h, &cmp, 4);
-		}
 
-		else
-		{
-			bytes = stbi_load(sImageFile.c_str(), &w, &h, &cmp, 4);
-		}
+		bytes = stbi_load(sImageFile.c_str(), &w, &h, &cmp, 4);
 
 		if (!bytes) return core::rcode::FAIL;
 		spr->width = w; spr->height = h;
@@ -743,7 +691,7 @@ namespace core
 
 	std::wstring ConvertS2W(std::string s)
 	{
-		std::int_t count = MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, NULL, 0);
+		int count = MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, NULL, 0);
 		wchar_t* buffer = new wchar_t[count];
 		MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, buffer, count);
 
@@ -761,7 +709,7 @@ namespace core
 		return core::OK;
 	}
 
-	core::rcode CreateGraphics(std::bool_t bFullScreen, std::bool_t bEnableVSYNC, const core::vi2d& vViewPos, const core::vi2d& vViewSize)
+	core::rcode CreateGraphics(bool bFullScreen, bool bEnableVSYNC, const core::vi2d& vViewPos, const core::vi2d& vViewSize)
 	{
 		if (CreateDevice({ core_hWnd }, bFullScreen, bEnableVSYNC) == core::rcode::OK)
 		{
@@ -772,7 +720,7 @@ namespace core
 		else return core::rcode::FAIL;
 	}
 
-	core::rcode CreateWindowPane(const core::vi2d& vWindowPos, core::vi2d& vWindowSize, std::bool_t bFullScreen)
+	core::rcode CreateWindowPane(const core::vi2d& vWindowPos, core::vi2d& vWindowSize, bool bFullScreen)
 	{
 		WNDCLASS wc;
 		wc.hIcon = LoadIconW(NULL, IDI_APPLICATION);
@@ -806,8 +754,8 @@ namespace core
 
 		RECT rWndRect = { 0, 0, vWindowSize.x, vWindowSize.y };
 		AdjustWindowRectEx(&rWndRect, dwStyle, FALSE, dwExStyle);
-		std::int_t width = rWndRect.right - rWndRect.left;
-		std::int_t height = rWndRect.bottom - rWndRect.top;
+		int width = rWndRect.right - rWndRect.left;
+		int height = rWndRect.bottom - rWndRect.top;
 
 		core_hWnd = CreateWindowExW(dwExStyle, L"core_PIXEL_GAME_ENGINE", L"OpenGL Game Engine", dwStyle,
 			vTopLeft.x, vTopLeft.y, width, height, NULL, NULL, GetModuleHandleW(nullptr), NULL);
@@ -905,81 +853,26 @@ namespace core
 
 
 
-	Sprite::Sprite(const std::string& sImageFile, core::ResourcePack* pack)
+	Sprite::Sprite(const std::string& sImageFile)
 	{
-		LoadFromFile(sImageFile, pack);
-	}
-	
-	core::rcode Sprite::LoadFromPGESprFile(const std::string& sImageFile, core::ResourcePack* pack)
-	{
-		if (pColData) delete[] pColData;
-		auto ReadData = [&](std::istream& is)
-		{
-			is.read((std::char_t*)&width, sizeof(std::int32_t));
-			is.read((std::char_t*)&height, sizeof(std::int32_t));
-			pColData = new Pixel[width * height];
-			is.read((std::char_t*)pColData, (std::size_t)width * (std::size_t)height * sizeof(std::uint32_t));
-		};
-
-		if (pack == nullptr)
-		{
-			std::ifstream ifs;
-			ifs.open(sImageFile, std::ifstream::binary);
-
-			if (ifs.is_open())
-			{
-				ReadData(ifs);
-				return core::OK;
-			}
-
-			else return core::FAIL;
-		}
-
-		else
-		{
-			ResourceBuffer rb = pack->GetFileBuffer(sImageFile);
-			std::istream is(&rb);
-			ReadData(is);
-			return core::OK;
-		}
-
-		return core::FAIL;
-	}
-	
-	core::rcode Sprite::SaveToPGESprFile(const std::string& sImageFile) const
-	{
-		if (pColData == nullptr) return core::FAIL;
-
-		std::ofstream ofs;
-		ofs.open(sImageFile, std::ifstream::binary);
-		if (ofs.is_open())
-		{
-			ofs.write((std::char_t*)&width, sizeof(std::int32_t));
-			ofs.write((std::char_t*)&height, sizeof(std::int32_t));
-			ofs.write((std::char_t*)pColData, (std::size_t)width * (std::size_t)height * sizeof(std::uint32_t));
-			ofs.close();
-			return core::OK;
-		}
-
-		return core::FAIL;
+		LoadFromFile(sImageFile);
 	}
 
-
-	Pixel Sprite::SampleBL(std::float_t u, std::float_t v) const noexcept
+	Pixel Sprite::SampleBL(float u, float v) const noexcept
 	{
 		u = u * width - 0.5f;
 		v = v * height - 0.5f;
-		std::int_t x = (std::int_t)std::floorf(u);
-		std::int_t y = (std::int_t)std::floorf(v);
-		std::float_t u_ratio = u - x;
-		std::float_t v_ratio = v - y;
-		std::float_t u_opposite = 1 - u_ratio;
-		std::float_t v_opposite = 1 - v_ratio;
+		int x = (int)std::floorf(u);
+		int y = (int)std::floorf(v);
+		float u_ratio = u - x;
+		float v_ratio = v - y;
+		float u_opposite = 1 - u_ratio;
+		float v_opposite = 1 - v_ratio;
 
 		core::Pixel p1 = GetPixel(std::max(x, 0), std::max(y, 0));
-		core::Pixel p2 = GetPixel(std::min(x + 1, (std::int_t)width - 1), std::max(y, 0));
-		core::Pixel p3 = GetPixel(std::max(x, 0), std::min(y + 1, (std::int_t)height - 1));
-		core::Pixel p4 = GetPixel(std::min(x + 1, (std::int_t)width - 1), std::min(y + 1, (std::int_t)height - 1));
+		core::Pixel p2 = GetPixel(std::min(x + 1, (int)width - 1), std::max(y, 0));
+		core::Pixel p3 = GetPixel(std::max(x, 0), std::min(y + 1, (int)height - 1));
+		core::Pixel p4 = GetPixel(std::min(x + 1, (int)width - 1), std::min(y + 1, (int)height - 1));
 
 		return core::Pixel
 		(
@@ -991,10 +884,9 @@ namespace core
 
 
 
-	core::rcode Sprite::LoadFromFile(const std::string& sImageFile, core::ResourcePack* pack)
+	core::rcode Sprite::LoadFromFile(const std::string& sImageFile)
 	{
-		static_cast<void>(pack);
-		return LoadImageResource(this, sImageFile, pack);
+		return LoadImageResource(this, sImageFile);
 	}
 
 
@@ -1011,9 +903,9 @@ namespace core
 	{
 		core::Sprite* spr = new core::Sprite(vSize.x, vSize.y);
 
-		for (std::int_t y = 0; y < vSize.y; y++)
+		for (int y = 0; y < vSize.y; y++)
 		{
-			for (std::int_t x = 0; x < vSize.x; x++)
+			for (int x = 0; x < vSize.x; x++)
 			{
 				spr->SetPixel(x, y, GetPixel(vPos.x + x, vPos.y + y));
 			}
@@ -1036,7 +928,7 @@ namespace core
 	void Decal::Update()
 	{
 		if (sprite == nullptr) return;
-		vUVScale = { 1.0f / std::float_t(sprite->width), 1.0f / std::float_t(sprite->height) };
+		vUVScale = { 1.0f / float(sprite->width), 1.0f / float(sprite->height) };
 		ApplyTexture(id);
 		UpdateTexture(id, sprite);
 	}
@@ -1058,10 +950,10 @@ namespace core
 		pDecal = std::make_unique<core::Decal>(pSprite.get());
 	}
 	
-	core::rcode Renderable::Load(const std::string& sFile, ResourcePack* pack)
+	core::rcode Renderable::Load(const std::string& sFile)
 	{
 		pSprite = std::make_unique<core::Sprite>();
-		if (pSprite->LoadFromFile(sFile, pack))
+		if (pSprite->LoadFromFile(sFile))
 		{
 			pDecal = std::make_unique<core::Decal>(pSprite.get());
 			return core::rcode::OK;
@@ -1084,180 +976,13 @@ namespace core
 	{
 		return pSprite.get();
 	}
-	
-	ResourceBuffer::ResourceBuffer(std::ifstream& ifs, std::uint32_t offset, std::uint32_t size)
-	{
-		vMemory.resize(size);
-		ifs.seekg(offset); ifs.read(vMemory.data(), vMemory.size());
-		setg(vMemory.data(), vMemory.data(), vMemory.data() + size);
-	}
-	
-	ResourcePack::ResourcePack() { }
-	
-	ResourcePack::~ResourcePack() { baseFile.close(); }
-	
-	std::bool_t ResourcePack::AddFile(const std::string& sFile)
-	{
-		const std::string file = makeposix(sFile);
-
-		if (std::filesystem::exists(file))
-		{
-			sResourceFile e;
-			e.nSize = static_cast<std::uint32_t>(std::filesystem::file_size(file));
-			e.nOffset = 0;
-			mapFiles[file] = e;
-			return true;
-		}
-
-		return false;
-	}
-	
-	std::bool_t ResourcePack::LoadPack(const std::string& sFile, const std::string& sKey)
-	{
-		baseFile.open(sFile, std::ifstream::binary);
-		if (!baseFile.is_open()) return false;
-
-		std::uint32_t nIndexSize = 0;
-		baseFile.read((std::char_t*)&nIndexSize, sizeof(std::uint32_t));
-
-		std::vector<std::char_t> buffer(nIndexSize);
-		for (std::uint32_t j = 0; j < nIndexSize; j++)
-		{
-			buffer[j] = baseFile.get();
-		}
-
-		std::vector<std::char_t> decoded = scramble(buffer, sKey);
-		std::size_t pos = 0;
-		auto read = [&decoded, &pos](std::char_t* dst, std::size_t size)
-		{
-			std::memcpy(static_cast<void*>(dst), static_cast<const void*>((decoded.data() + pos)), size);
-			pos += size;
-		};
-
-		auto get = [&read]() -> std::int_t 
-		{
-			std::char_t c;
-			read(&c, 1);
-			return c;
-		};
-
-		std::uint32_t nMapEntries = 0;
-		read((std::char_t*)&nMapEntries, sizeof(std::uint32_t));
-
-		for (std::uint32_t i = 0; i < nMapEntries; i++)
-		{
-			std::uint32_t nFilePathSize = 0;
-			read((std::char_t*)&nFilePathSize, sizeof(std::uint32_t));
-
-			std::string sFileName(nFilePathSize, ' ');
-			for (std::uint32_t j = 0; j < nFilePathSize; j++)
-			{
-				sFileName[j] = get();
-			}
-
-			sResourceFile e;
-			read((std::char_t*)&e.nSize, sizeof(std::uint32_t));
-			read((std::char_t*)&e.nOffset, sizeof(std::uint32_t));
-			mapFiles[sFileName] = e;
-		}
-
-		return true;
-	}
-
-	std::bool_t ResourcePack::SavePack(const std::string& sFile, const std::string& sKey)
-	{
-		std::ofstream ofs(sFile, std::ofstream::binary);
-		if (!ofs.is_open()) return false;
-
-		std::uint32_t nIndexSize = 0;
-		ofs.write((std::char_t*)&nIndexSize, sizeof(std::uint32_t));
-		std::uint32_t nMapSize = std::uint32_t(mapFiles.size());
-		ofs.write((std::char_t*)&nMapSize, sizeof(std::uint32_t));
-		for (auto& e : mapFiles)
-		{
-			std::size_t nPathSize = e.first.size();
-			ofs.write((std::char_t*)&nPathSize, sizeof(std::uint32_t));
-			ofs.write(e.first.c_str(), nPathSize);
-
-			ofs.write((std::char_t*)&e.second.nSize, sizeof(std::uint32_t));
-			ofs.write((std::char_t*)&e.second.nOffset, sizeof(std::uint32_t));
-		}
-
-		std::streampos offset = ofs.tellp();
-		nIndexSize = static_cast<std::uint32_t>(offset);
-		for (auto& e : mapFiles)
-		{
-			e.second.nOffset = static_cast<std::uint32_t>(offset);
-
-			std::vector<std::uint8_t> vBuffer(e.second.nSize);
-			std::ifstream i(e.first, std::ifstream::binary);
-			i.read((std::char_t*)vBuffer.data(), e.second.nSize);
-			i.close();
-
-			ofs.write((std::char_t*)vBuffer.data(), e.second.nSize);
-			offset += e.second.nSize;
-		}
-
-		std::vector<std::char_t> stream;
-		auto write = [&stream](const std::char_t* data, std::size_t size) 
-		{
-			std::size_t sizeNow = stream.size();
-			stream.resize(sizeNow + size);
-			std::memcpy(stream.data() + sizeNow, data, size);
-		};
-
-		write((std::char_t*)&nMapSize, sizeof(std::uint32_t));
-		for (auto& e : mapFiles)
-		{
-			std::size_t nPathSize = e.first.size();
-			write((std::char_t*)&nPathSize, sizeof(std::uint32_t));
-			write(e.first.c_str(), nPathSize);
-
-			write((std::char_t*)&e.second.nSize, sizeof(std::uint32_t));
-			write((std::char_t*)&e.second.nOffset, sizeof(std::uint32_t));
-		}
-		std::vector<std::char_t> sIndexString = scramble(stream, sKey);
-		std::uint32_t nIndexStringLen = std::uint32_t(sIndexString.size());
-		
-		ofs.seekp(0, std::ios::beg);
-		ofs.write((std::char_t*)&nIndexStringLen, sizeof(std::uint32_t));
-		ofs.write(sIndexString.data(), nIndexStringLen);
-		ofs.close();
-		return true;
-	}
-
-	ResourceBuffer ResourcePack::GetFileBuffer(const std::string& sFile)
-	{
-		return ResourceBuffer(baseFile, mapFiles[sFile].nOffset, mapFiles[sFile].nSize);
-	}
-
-	std::bool_t ResourcePack::Loaded()
-	{
-		return baseFile.is_open();
-	}
-
-	std::vector<std::char_t> ResourcePack::scramble(const std::vector<std::char_t>& data, const std::string& key)
-	{
-		if (key.empty()) return data;
-		std::vector<std::char_t> o;
-		std::size_t c = 0;
-		for (auto s : data) o.push_back(s ^ key[(c++) % key.size()]);
-		return o;
-	};
-
-	std::string ResourcePack::makeposix(const std::string& path)
-	{
-		std::string o;
-		for (auto s : path) o += std::string(1, s == '\\' ? '/' : s);
-		return o;
-	};
 
 
-	core::rcode Construct(std::int32_t screen_w, std::int32_t screen_h, std::int32_t pixel_w, std::int32_t pixel_h, std::bool_t full_screen, std::bool_t vsync, std::bool_t cohesion)
+	core::rcode Construct(std::int32_t screen_w, std::int32_t screen_h, std::int32_t pixel_w, std::int32_t pixel_h, bool full_screen, bool vsync, bool cohesion)
 	{
 		bPixelCohesion = cohesion;
 		vScreenSize = { screen_w, screen_h };
-		vInvScreenSize = { 1.0f / std::float_t(screen_w), 1.0f / std::float_t(screen_h) };
+		vInvScreenSize = { 1.0f / float(screen_w), 1.0f / float(screen_h) };
 		vPixelSize = { pixel_w, pixel_h };
 		vWindowSize = vScreenSize * vPixelSize;
 		bFullScreen = full_screen;
@@ -1271,10 +996,10 @@ namespace core
 
 
 
-	void SetScreenSize(std::int_t w, std::int_t h)
+	void SetScreenSize(int w, int h)
 	{
 		vScreenSize = { w, h };
-		vInvScreenSize = { 1.0f / std::float_t(w), 1.0f / std::float_t(h) };
+		vInvScreenSize = { 1.0f / float(w), 1.0f / float(h) };
 		for (auto& layer : vLayers)
 		{
 			delete layer.pDrawTarget;
@@ -1337,7 +1062,7 @@ namespace core
 		SetLayerOffset(layer, offset.x, offset.y);
 	}
 	
-	void SetLayerOffset(std::uint8_t layer, std::float_t x, std::float_t y) noexcept
+	void SetLayerOffset(std::uint8_t layer, float x, float y) noexcept
 	{
 		if (layer < vLayers.size()) vLayers[layer].vOffset = { x, y };
 	}
@@ -1347,7 +1072,7 @@ namespace core
 		SetLayerScale(layer, scale.x, scale.y);
 	}
 	
-	void SetLayerScale(std::uint8_t layer, std::float_t x, std::float_t y) noexcept
+	void SetLayerScale(std::uint8_t layer, float x, float y) noexcept
 	{
 		if (layer < vLayers.size()) vLayers[layer].vScale = { x, y };
 	}
@@ -1399,7 +1124,7 @@ namespace core
 		return nLastFPS;
 	}
 	
-	std::bool_t IsFocused() noexcept
+	bool IsFocused() noexcept
 	{
 		return bHasInputFocus;
 	}
@@ -1444,7 +1169,7 @@ namespace core
 		return vScreenSize.y;
 	}
 	
-	std::float_t GetElapsedTime() noexcept
+	float GetElapsedTime() noexcept
 	{
 		return fLastElapsed;
 	}
@@ -1474,12 +1199,12 @@ namespace core
 		core_SetMousePos(pos.x, pos.y);
 	}
 	
-	std::bool_t Draw(const core::vi2d& pos, Pixel p)
+	bool Draw(const core::vi2d& pos, Pixel p)
 	{
 		return Draw(pos.x, pos.y, p);
 	}
 	
-	std::bool_t Draw(std::int32_t x, std::int32_t y, Pixel p)
+	bool Draw(std::int32_t x, std::int32_t y, Pixel p)
 	{
 		if (!pDrawTarget) return false;
 
@@ -1496,11 +1221,11 @@ namespace core
 		if (nPixelMode == Pixel::ALPHA)
 		{
 			Pixel d = pDrawTarget->GetPixel(x, y);
-			std::float_t a = static_cast<std::float_t>((p.a / 255.0f)) * fBlendFactor;
-			std::float_t c = 1.0f - a;
-			std::float_t r = a * (std::float_t)p.r + c * (std::float_t)d.r;
-			std::float_t g = a * (std::float_t)p.g + c * (std::float_t)d.g;
-			std::float_t b = a * (std::float_t)p.b + c * (std::float_t)d.b;
+			float a = static_cast<float>((p.a / 255.0f)) * fBlendFactor;
+			float c = 1.0f - a;
+			float r = a * (float)p.r + c * (float)d.r;
+			float g = a * (float)p.g + c * (float)d.g;
+			float b = a * (float)p.b + c * (float)d.b;
 			return pDrawTarget->SetPixel(x, y, Pixel((std::uint8_t)r, (std::uint8_t)g, (std::uint8_t)b/*, (std::uint8_t)(p.a * fBlendFactor)*/));
 		}
 
@@ -1519,7 +1244,7 @@ namespace core
 
 	void DrawLine(std::int32_t x1, std::int32_t y1, std::int32_t x2, std::int32_t y2, Pixel p, std::uint32_t pattern)
 	{
-		std::int_t x, y, dx, dy, dx1, dy1, px, py, xe, ye, i;
+		int x, y, dx, dy, dx1, dy1, px, py, xe, ye, i;
 		dx = x2 - x1; dy = y2 - y1;
 
 		auto rol = [&](void)
@@ -1614,9 +1339,9 @@ namespace core
 
 		if (radius > 0)
 		{
-			std::int_t x0 = 0;
-			std::int_t y0 = radius;
-			std::int_t d = 3 - 2 * radius;
+			int x0 = 0;
+			int y0 = radius;
+			int d = 3 - 2 * radius;
 
 			while (y0 >= x0)
 			{
@@ -1651,13 +1376,13 @@ namespace core
 
 		if (radius > 0)
 		{
-			std::int_t x0 = 0;
-			std::int_t y0 = radius;
-			std::int_t d = 3 - 2 * radius;
+			int x0 = 0;
+			int y0 = radius;
+			int d = 3 - 2 * radius;
 
-			auto drawline = [&](std::int_t sx, std::int_t ex, std::int_t y)
+			auto drawline = [&](int sx, int ex, int y)
 			{
-				for (std::int_t x = sx; x <= ex; x++) Draw(x, y, p);
+				for (int x = sx; x <= ex; x++) Draw(x, y, p);
 			};
 
 			while (y0 >= x0)
@@ -1698,9 +1423,9 @@ namespace core
 
 	void Clear(Pixel p)
 	{
-		std::int_t pixels = GetDrawTargetWidth() * GetDrawTargetHeight();
+		int pixels = GetDrawTargetWidth() * GetDrawTargetHeight();
 		Pixel* m = GetDrawTarget()->GetData();
-		for (std::int_t i = 0; i < pixels; i++) m[i] = p;
+		for (int i = 0; i < pixels; i++) m[i] = p;
 	}
 
 
@@ -1724,9 +1449,9 @@ namespace core
 		if (y2 < 0) y2 = 0;
 		if (y2 >= static_cast<std::int32_t>(GetDrawTargetHeight())) y2 = static_cast<std::int32_t>(GetDrawTargetHeight());
 
-		for (std::int_t i = x; i < x2; i++)
+		for (int i = x; i < x2; i++)
 		{
-			for (std::int_t j = y; j < y2; j++)
+			for (int j = y; j < y2; j++)
 			{
 				Draw(i, j, p);
 			}
@@ -1752,37 +1477,37 @@ namespace core
 
 	void FillTriangle(std::int32_t x1, std::int32_t y1, std::int32_t x2, std::int32_t y2, std::int32_t x3, std::int32_t y3, Pixel p)
 	{
-		auto drawline = [&](std::int_t sx, std::int_t ex, std::int_t ny) { for (std::int_t i = sx; i <= ex; i++) Draw(i, ny, p); };
+		auto drawline = [&](int sx, int ex, int ny) { for (int i = sx; i <= ex; i++) Draw(i, ny, p); };
 
-		std::int_t t1x, t2x, y, minx, maxx, t1xp, t2xp;
-		std::bool_t changed1 = false;
-		std::bool_t changed2 = false;
-		std::int_t signx1, signx2, dx1, dy1, dx2, dy2;
-		std::int_t e1, e2;
+		int t1x, t2x, y, minx, maxx, t1xp, t2xp;
+		bool changed1 = false;
+		bool changed2 = false;
+		int signx1, signx2, dx1, dy1, dx2, dy2;
+		int e1, e2;
 
 		if (y1 > y2) { std::swap(y1, y2); std::swap(x1, x2); }
 		if (y1 > y3) { std::swap(y1, y3); std::swap(x1, x3); }
 		if (y2 > y3) { std::swap(y2, y3); std::swap(x2, x3); }
 
 		t1x = t2x = x1; y = y1;
-		dx1 = (std::int_t)(x2 - x1);
+		dx1 = (int)(x2 - x1);
 		if (dx1 < 0) { dx1 = -dx1; signx1 = -1; }
 		else signx1 = 1;
-		dy1 = (std::int_t)(y2 - y1);
+		dy1 = (int)(y2 - y1);
 
-		dx2 = (std::int_t)(x3 - x1);
+		dx2 = (int)(x3 - x1);
 		if (dx2 < 0) { dx2 = -dx2; signx2 = -1; }
 		else signx2 = 1;
-		dy2 = (std::int_t)(y3 - y1);
+		dy2 = (int)(y3 - y1);
 
 		if (dy1 > dx1) { std::swap(dx1, dy1); changed1 = true; }
 		if (dy2 > dx2) { std::swap(dy2, dx2); changed2 = true; }
 
-		e2 = (std::int_t)(dx2 >> 1);
+		e2 = (int)(dx2 >> 1);
 		if (y1 == y2) goto next;
-		e1 = (std::int_t)(dx1 >> 1);
+		e1 = (int)(dx1 >> 1);
 
-		for (std::int_t i = 0; i < dx1;)
+		for (int i = 0; i < dx1;)
 		{
 			t1xp = 0; t2xp = 0;
 			if (t1x < t2x) { minx = t1x; maxx = t2x; }
@@ -1837,9 +1562,9 @@ namespace core
 		}
 
 	next:
-		dx1 = (std::int_t)(x3 - x2); if (dx1 < 0) { dx1 = -dx1; signx1 = -1; }
+		dx1 = (int)(x3 - x2); if (dx1 < 0) { dx1 = -dx1; signx1 = -1; }
 		else signx1 = 1;
-		dy1 = (std::int_t)(y3 - y2);
+		dy1 = (int)(y3 - y2);
 		t1x = x2;
 
 		if (dy1 > dx1)
@@ -1850,9 +1575,9 @@ namespace core
 
 		else changed1 = false;
 
-		e1 = (std::int_t)(dx1 >> 1);
+		e1 = (int)(dx1 >> 1);
 
-		for (std::int_t i = 0; i <= dx1; i++) 
+		for (int i = 0; i <= dx1; i++) 
 		{
 			t1xp = 0; t2xp = 0;
 			if (t1x < t2x) { minx = t1x; maxx = t2x; }
@@ -2066,8 +1791,8 @@ namespace core
 
 		core::vf2d vScreenSpaceDim =
 		{
-			vScreenSpacePos.x + (2.0f * (std::float_t(decal->sprite->width) * vInvScreenSize.x)) * scale.x,
-			vScreenSpacePos.y - (2.0f * (std::float_t(decal->sprite->height) * vInvScreenSize.y)) * scale.y
+			vScreenSpacePos.x + (2.0f * (float(decal->sprite->width) * vInvScreenSize.x)) * scale.x,
+			vScreenSpacePos.y - (2.0f * (float(decal->sprite->height) * vInvScreenSize.y)) * scale.y
 		};
 
 		DecalInstance di;
@@ -2080,17 +1805,17 @@ namespace core
 		vLayers[nTargetLayer].vecDecalInstance.push_back(di);
 	}
 
-	void DrawRotatedDecal(const core::vf2d& pos, core::Decal* decal, const std::float_t fAngle, const core::vf2d& center, const core::vf2d& scale, const core::Pixel& tint)
+	void DrawRotatedDecal(const core::vf2d& pos, core::Decal* decal, const float fAngle, const core::vf2d& center, const core::vf2d& scale, const core::Pixel& tint)
 	{
 		DecalInstance di;
 		di.decal = decal;
 		di.tint[0] = tint;
 		di.pos[0] = (core::vf2d(0.0f, 0.0f) - center) * scale;
-		di.pos[1] = (core::vf2d(0.0f, std::float_t(decal->sprite->height)) - center) * scale;
-		di.pos[2] = (core::vf2d(std::float_t(decal->sprite->width), std::float_t(decal->sprite->height)) - center) * scale;
-		di.pos[3] = (core::vf2d(std::float_t(decal->sprite->width), 0.0f) - center) * scale;
-		std::float_t c = std::cosf(fAngle), s = std::sinf(fAngle);
-		for (std::int_t i = 0; i < 4; i++)
+		di.pos[1] = (core::vf2d(0.0f, float(decal->sprite->height)) - center) * scale;
+		di.pos[2] = (core::vf2d(float(decal->sprite->width), float(decal->sprite->height)) - center) * scale;
+		di.pos[3] = (core::vf2d(float(decal->sprite->width), 0.0f) - center) * scale;
+		float c = std::cosf(fAngle), s = std::sinf(fAngle);
+		for (int i = 0; i < 4; i++)
 		{
 			di.pos[i] = pos + core::vf2d(di.pos[i].x * c - di.pos[i].y * s, di.pos[i].x * s + di.pos[i].y * c);
 			di.pos[i] = di.pos[i] * vInvScreenSize * 2.0f - core::vf2d(1.0f, 1.0f);
@@ -2105,7 +1830,7 @@ namespace core
 		DecalInstance di;
 		di.decal = decal;
 
-		for (std::int_t i = 0; i < 4; i++)
+		for (int i = 0; i < 4; i++)
 		{
 			di.pos[i] = { (pos[i].x * vInvScreenSize.x) * 2.0f - 1.0f, ((pos[i].y * vInvScreenSize.y) * 2.0f - 1.0f) * -1.0f };
 			di.uv[i] = uv[i];
@@ -2131,7 +1856,7 @@ namespace core
 		DrawExplicitDecal(nullptr, points.data(), uvs.data(), cols.data());
 	}
 
-	void DrawPartialRotatedDecal(const core::vf2d& pos, core::Decal* decal, const std::float_t fAngle, const core::vf2d& center, const core::vf2d& source_pos, const core::vf2d& source_size, const core::vf2d& scale, const core::Pixel& tint)
+	void DrawPartialRotatedDecal(const core::vf2d& pos, core::Decal* decal, const float fAngle, const core::vf2d& center, const core::vf2d& source_pos, const core::vf2d& source_size, const core::vf2d& scale, const core::Pixel& tint)
 	{
 		DecalInstance di;
 		di.decal = decal;
@@ -2140,9 +1865,9 @@ namespace core
 		di.pos[1] = (core::vf2d(0.0f, source_size.y) - center) * scale;
 		di.pos[2] = (core::vf2d(source_size.x, source_size.y) - center) * scale;
 		di.pos[3] = (core::vf2d(source_size.x, 0.0f) - center) * scale;
-		std::float_t c = std::cosf(fAngle), s = std::sinf(fAngle);
+		float c = std::cosf(fAngle), s = std::sinf(fAngle);
 
-		for (std::int_t i = 0; i < 4; i++)
+		for (int i = 0; i < 4; i++)
 		{
 			di.pos[i] = pos + core::vf2d(di.pos[i].x * c - di.pos[i].y * s, di.pos[i].x * s + di.pos[i].y * c);
 			di.pos[i] = di.pos[i] * vInvScreenSize * 2.0f - core::vf2d(1.0f, 1.0f);
@@ -2164,7 +1889,7 @@ namespace core
 		di.tint[0] = tint;
 		core::vf2d center;
 
-		std::float_t rd = ((pos[2].x - pos[0].x) * (pos[3].y - pos[1].y) - (pos[3].x - pos[1].x) * (pos[2].y - pos[0].y));
+		float rd = ((pos[2].x - pos[0].x) * (pos[3].y - pos[1].y) - (pos[3].x - pos[1].x) * (pos[2].y - pos[0].y));
 		if (rd != 0)
 		{
 			core::vf2d uvtl = source_pos * decal->vUVScale;
@@ -2173,14 +1898,14 @@ namespace core
 			di.uv[2] = { uvbr.x, uvbr.y }; di.uv[3] = { uvbr.x, uvtl.y };
 
 			rd = 1.0f / rd;
-			std::float_t rn = ((pos[3].x - pos[1].x) * (pos[0].y - pos[1].y) - (pos[3].y - pos[1].y) * (pos[0].x - pos[1].x)) * rd;
-			std::float_t sn = ((pos[2].x - pos[0].x) * (pos[0].y - pos[1].y) - (pos[2].y - pos[0].y) * (pos[0].x - pos[1].x)) * rd;
+			float rn = ((pos[3].x - pos[1].x) * (pos[0].y - pos[1].y) - (pos[3].y - pos[1].y) * (pos[0].x - pos[1].x)) * rd;
+			float sn = ((pos[2].x - pos[0].x) * (pos[0].y - pos[1].y) - (pos[2].y - pos[0].y) * (pos[0].x - pos[1].x)) * rd;
 			if (!(rn < 0.f || rn > 1.f || sn < 0.f || sn > 1.f)) center = pos[0] + rn * (pos[2] - pos[0]);
-			std::float_t d[4];	for (std::int_t i = 0; i < 4; i++)	d[i] = (pos[i] - center).mag();
+			float d[4];	for (int i = 0; i < 4; i++)	d[i] = (pos[i] - center).mag();
 
-			for (std::int_t i = 0; i < 4; i++)
+			for (int i = 0; i < 4; i++)
 			{
-				std::float_t q = d[i] == 0.0f ? 1.0f : (d[i] + d[(i + 2) & 3]) / d[(i + 2) & 3];
+				float q = d[i] == 0.0f ? 1.0f : (d[i] + d[(i + 2) & 3]) / d[(i + 2) & 3];
 				di.uv[i] *= q; di.w[i] *= q;
 				di.pos[i] = { (pos[i].x * vInvScreenSize.x) * 2.0f - 1.0f, ((pos[i].y * vInvScreenSize.y) * 2.0f - 1.0f) * -1.0f };
 			}
@@ -2195,19 +1920,19 @@ namespace core
 		di.decal = decal;
 		di.tint[0] = tint;
 		core::vf2d center;
-		std::float_t rd = ((pos[2].x - pos[0].x) * (pos[3].y - pos[1].y) - (pos[3].x - pos[1].x) * (pos[2].y - pos[0].y));
+		float rd = ((pos[2].x - pos[0].x) * (pos[3].y - pos[1].y) - (pos[3].x - pos[1].x) * (pos[2].y - pos[0].y));
 
 		if (rd != 0)
 		{
 			rd = 1.0f / rd;
-			std::float_t rn = ((pos[3].x - pos[1].x) * (pos[0].y - pos[1].y) - (pos[3].y - pos[1].y) * (pos[0].x - pos[1].x)) * rd;
-			std::float_t sn = ((pos[2].x - pos[0].x) * (pos[0].y - pos[1].y) - (pos[2].y - pos[0].y) * (pos[0].x - pos[1].x)) * rd;
+			float rn = ((pos[3].x - pos[1].x) * (pos[0].y - pos[1].y) - (pos[3].y - pos[1].y) * (pos[0].x - pos[1].x)) * rd;
+			float sn = ((pos[2].x - pos[0].x) * (pos[0].y - pos[1].y) - (pos[2].y - pos[0].y) * (pos[0].x - pos[1].x)) * rd;
 			if (!(rn < 0.f || rn > 1.f || sn < 0.f || sn > 1.f)) center = pos[0] + rn * (pos[2] - pos[0]);
-			std::float_t d[4];	for (std::int_t i = 0; i < 4; i++)	d[i] = (pos[i] - center).mag();
+			float d[4];	for (int i = 0; i < 4; i++)	d[i] = (pos[i] - center).mag();
 
-			for (std::int_t i = 0; i < 4; i++)
+			for (int i = 0; i < 4; i++)
 			{
-				std::float_t q = d[i] == 0.0f ? 1.0f : (d[i] + d[(i + 2) & 3]) / d[(i + 2) & 3];
+				float q = d[i] == 0.0f ? 1.0f : (d[i] + d[(i + 2) & 3]) / d[(i + 2) & 3];
 				di.uv[i] *= q; di.w[i] *= q;
 				di.pos[i] = { (pos[i].x * vInvScreenSize.x) * 2.0f - 1.0f, ((pos[i].y * vInvScreenSize.y) * 2.0f - 1.0f) * -1.0f };
 			}
@@ -2251,7 +1976,7 @@ namespace core
 			{
 				std::int32_t ox = (c - 32) % 16;
 				std::int32_t oy = (c - 32) / 16;
-				DrawPartialDecal(pos + spos, fontDecal, { std::float_t(ox) * 8.0f, std::float_t(oy) * 8.0f }, { 8.0f, 8.0f }, scale, col);
+				DrawPartialDecal(pos + spos, fontDecal, { float(ox) * 8.0f, float(oy) * 8.0f }, { 8.0f, 8.0f }, scale, col);
 				spos.x += 8.0f * scale.x;
 			}
 		}
@@ -2351,13 +2076,13 @@ namespace core
 		return nPixelMode;
 	}
 
-	void SetPixelMode(std::function<core::Pixel(const std::int_t x, const std::int_t y, const core::Pixel&, const core::Pixel&)> pixelMode)
+	void SetPixelMode(std::function<core::Pixel(const int x, const int y, const core::Pixel&, const core::Pixel&)> pixelMode)
 	{
 		funcPixelMode = pixelMode;
 		nPixelMode = Pixel::Mode::CUSTOM;
 	}
 
-	void SetPixelBlend(std::float_t fBlend)
+	void SetPixelBlend(float fBlend)
 	{
 		fBlendFactor = fBlend;
 		if (fBlendFactor < 0.0f) fBlendFactor = 0.0f;
@@ -2365,17 +2090,17 @@ namespace core
 	}
 
 
-	//std::bool_t OnUserCreate()
+	//bool OnUserCreate()
 	//{
 	//	return false;
 	//}
 	//
-	//std::bool_t OnUserUpdate(std::float_t fElapsedTime)
+	//bool OnUserUpdate(float fElapsedTime)
 	//{
 	//	static_cast<void>(fElapsedTime); return false;
 	//}
 	//
-	//std::bool_t OnUserDestroy()
+	//bool OnUserDestroy()
 	//{
 	//	return true;
 	//}
@@ -2384,7 +2109,7 @@ namespace core
 	{
 		std::int32_t ww = vScreenSize.x * vPixelSize.x;
 		std::int32_t wh = vScreenSize.y * vPixelSize.y;
-		std::float_t wasp = static_cast<std::float_t>(ww) / static_cast<std::float_t>(wh);
+		float wasp = static_cast<float>(ww) / static_cast<float>(wh);
 
 		if (bPixelCohesion)
 		{
@@ -2395,12 +2120,12 @@ namespace core
 		else
 		{
 			vViewSize.x = static_cast<std::int32_t>(vWindowSize.x);
-			vViewSize.y = (std::int32_t)((std::float_t)vViewSize.x / wasp);
+			vViewSize.y = (std::int32_t)((float)vViewSize.x / wasp);
 
 			if (vViewSize.y > vWindowSize.y)
 			{
 				vViewSize.y = vWindowSize.y;
-				vViewSize.x = (std::int32_t)((std::float_t)vViewSize.y * wasp);
+				vViewSize.x = (std::int32_t)((float)vViewSize.y * wasp);
 			}
 		}
 
@@ -2425,30 +2150,30 @@ namespace core
 
 		x -= vViewPos.x;
 		y -= vViewPos.y;
-		vMousePosCache.x = (std::int32_t)(((std::float_t)x / (std::float_t)(vWindowSize.x - (vViewPos.x * 2)) * (std::float_t)vScreenSize.x));
-		vMousePosCache.y = (std::int32_t)(((std::float_t)y / (std::float_t)(vWindowSize.y - (vViewPos.y * 2)) * (std::float_t)vScreenSize.y));
+		vMousePosCache.x = (std::int32_t)(((float)x / (float)(vWindowSize.x - (vViewPos.x * 2)) * (float)vScreenSize.x));
+		vMousePosCache.y = (std::int32_t)(((float)y / (float)(vWindowSize.y - (vViewPos.y * 2)) * (float)vScreenSize.y));
 		if (vMousePosCache.x >= (std::int32_t)vScreenSize.x)	vMousePosCache.x = vScreenSize.x - 1;
 		if (vMousePosCache.y >= (std::int32_t)vScreenSize.y)	vMousePosCache.y = vScreenSize.y - 1;
 		if (vMousePosCache.x < 0) vMousePosCache.x = 0;
 		if (vMousePosCache.y < 0) vMousePosCache.y = 0;
 	}
 
-	void core_UpdateMouseState(std::int32_t button, std::bool_t state)
+	void core_UpdateMouseState(std::int32_t button, bool state)
 	{
 		pMouseNewState[button] = state;
 	}
 
-	void core_UpdateKeyState(std::int32_t key, std::bool_t state)
+	void core_UpdateKeyState(std::int32_t key, bool state)
 	{
 		pKeyNewState[key] = state;
 	}
 
-	void core_UpdateMouseFocus(std::bool_t state)
+	void core_UpdateMouseFocus(bool state)
 	{
 		bHasMouseFocus = state;
 	}
 
-	void core_UpdateKeyFocus(std::bool_t state)
+	void core_UpdateKeyFocus(bool state)
 	{
 		bHasInputFocus = state;
 	}
@@ -2505,12 +2230,12 @@ namespace core
 		auto elapsedTime = m_tp2 - m_tp1;
 		m_tp1 = m_tp2;
 
-		std::float_t fElapsedTime = static_cast<std::float_t>(elapsedTime.count());
+		float fElapsedTime = static_cast<float>(elapsedTime.count());
 		fLastElapsed = fElapsedTime;
 
 		HandleSystemEvent();
 
-		auto ScanHardware = [&](HWButton* pKeys, std::bool_t* pStateOld, std::bool_t* pStateNew, std::uint32_t nKeyCount)
+		auto ScanHardware = [&](HWButton* pKeys, bool* pStateOld, bool* pStateNew, std::uint32_t nKeyCount)
 		{
 			for (std::uint32_t i = 0; i < nKeyCount; i++)
 			{
@@ -2614,7 +2339,7 @@ namespace core
 		data += "?P9PL020O`<`N3R0@E4HC7b0@ET<ATB0@@l6C4B0O`H3N7b0?P01L3R000000020";
 
 		fontSprite = new core::Sprite(128, 48);
-		std::int_t px = 0, py = 0;
+		int px = 0, py = 0;
 
 		for (std::size_t b = 0; b < 1024; b += 4)
 		{
@@ -2624,9 +2349,9 @@ namespace core
 			std::uint32_t sym4 = (std::uint32_t)data[b + 3] - 48;
 			std::uint32_t r = sym1 << 18 | sym2 << 12 | sym3 << 6 | sym4;
 
-			for (std::int_t i = 0; i < 24; i++)
+			for (int i = 0; i < 24; i++)
 			{
-				std::int_t k = r & (1 << i) ? 255 : 0;
+				int k = r & (1 << i) ? 255 : 0;
 				fontSprite->SetPixel(px, py, core::Pixel(k, k, k, k));
 				if (++py == 48) { px++; py = 0; }
 			}
