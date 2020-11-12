@@ -3,19 +3,19 @@ module;
 #include <functional>
 #include <array>
 #include <tuple>
-#include "gcem.hpp"
+#include <cmath>
 export module matrix;
 
 import core;
 import trig;
 import vector;
 
-export namespace cla::mat
+export namespace cla
 {
 	template<typename binaryop = std::multiplies<void>, typename T, std::size_t S>
 	constexpr auto apply(const std::array<std::array<T, S>, S>& mat1, const T& operand)
 	{
-		cla::core::matrix<T, S> mat;
+		std::array<std::array<T, S>, S> mat;
 
 		for (auto i = 0; i < S; ++i)
 		{
@@ -86,8 +86,8 @@ export namespace cla::mat
 		return std::array<std::array<T, 4>, 4>
 		{
 			(T)1.0L, (T)0.0L, (T)0.0L, (T)0.0L,
-			(T)0.0L, gcem::cos(angle), -gcem::sin(angle), (T)0.0L,
-			(T)0.0L, gcem::sin(angle), gcem::cos(angle), (T)0.0L,
+			(T)0.0L, (T)std::cos(angle), -(T)std::sin(angle), (T)0.0L,
+			(T)0.0L, (T)std::sin(angle),  (T)std::cos(angle), (T)0.0L,
 			(T)0.0L, (T)0.0L, (T)0.0L, (T)1.0L
 		};
 	}
@@ -97,9 +97,9 @@ export namespace cla::mat
 	{
 		return std::array<std::array<T, 4>, 4>
 		{
-			gcem::cos(angle), (T)0.0L, gcem::sin(angle), (T)0.0L,
+			(T)std::cos(angle), (T)0.0L, (T)std::sin(angle), (T)0.0L,
 			(T)0.0L, (T)1.0L, (T)0.0L, (T)0.0L,
-			-gcem::sin(angle), (T)0.0L, gcem::cos(angle), (T)0.0L,
+			-(T)std::sin(angle), (T)0.0L, (T)std::cos(angle), (T)0.0L,
 			(T)0.0L, (T)0.0L, (T)0.0L, (T)1.0L
 		};
 	}
@@ -109,8 +109,8 @@ export namespace cla::mat
 	{
 		return std::array<std::array<T, 4>, 4>
 		{
-			gcem::cos(angle), gcem::sin(angle), (T)0.0L, (T)0.0L,
-			gcem::sin(angle), gcem::cos(angle), (T)0.0L, (T)0.0L,
+			(T)std::cos(angle), (T)std::sin(angle), (T)0.0L, (T)0.0L,
+			(T)std::sin(angle), (T)std::cos(angle), (T)0.0L, (T)0.0L,
 			(T)0.0L, (T)0.0L, (T)1.0L, (T)0.0L,
 			(T)0.0L, (T)0.0L, (T)0.0L, (T)1.0L
 		};
@@ -119,7 +119,7 @@ export namespace cla::mat
 	template<typename T>
 	constexpr auto rotationXYZ(const T& x, const T& y, const T& z) noexcept
 	{
-		return mat::compose(mat::rotationX(x), mat::compose(mat::rotationY(y), mat::rotationZ(y)));
+		return cla::compose(cla::rotationX(x), cla::compose(cla::rotationY(y), cla::rotationZ(y)));
 	}
 
 	template<typename T>
@@ -137,7 +137,7 @@ export namespace cla::mat
 	template<typename T>
 	constexpr auto projection(const T& fov, const T& aspectRatio, const T& near, const T& far) noexcept
 	{
-		T fovRad = static_cast<T>(1) / gcem::tan(cla::trig::radians(fov * static_cast<T>(0.5L)));
+		T fovRad = static_cast<T>(1) / std::tan(core::radians(fov * static_cast<T>(0.5L)));
 
 		return std::array<std::array<T, 4>, 4>
 		{
@@ -151,11 +151,11 @@ export namespace cla::mat
 	template<typename T, typename... Ts>
 	constexpr auto pointAt(const std::tuple<Ts...>& pos, const std::tuple<Ts...>& target, const std::tuple<Ts...>& up) noexcept requires (sizeof...(Ts) == 3) or (sizeof...(Ts) == 4)
 	{
-		auto newForward = cla::vec::normalize(cla::vec::apply<std::minus<>>(target, pos));
+		auto newForward = cla::normalize(cla::apply<std::minus<>>(target, pos));
 
-		auto newUp = cla::vec::normalize(cla::vec::apply<std::minus<>>(up, cla::vec::apply<std::multiplies<>>(newForward, cla::vec::dot(up, newForward))));
+		auto newUp = cla::normalize(cla::apply<std::minus<>>(up, cla::apply<std::multiplies<>>(newForward, cla::dot(up, newForward))));
 
-		auto newRight = cla::vec::cross(newUp, newForward);
+		auto newRight = cla::cross(newUp, newForward);
 
 		return std::array<std::array<T, 4>, 4>
 		{

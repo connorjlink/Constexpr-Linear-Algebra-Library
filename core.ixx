@@ -1,27 +1,26 @@
 module;
 #include <tuple>
-#include <vector>
-#include <cstddef>
+#include <array>
 export module core;
 
-export namespace cla::core
+export namespace cla
 {
 	//define the matrix alias to a c++ array of arrays
-	template<std::size_t N, typename T>
+	template<typename T, unsigned int N>
 	using matrix = std::array<std::array<T, N>, N>;
 
 	//define matrix type aliases
-	using int2x2 = matrix<2, int>;
-	using int3x3 = matrix<3, int>;
-	using int4x4 = matrix<4, int>;
+	using int2x2 = matrix<int, 2>;
+	using int3x3 = matrix<int, 3>;
+	using int4x4 = matrix<int, 4>;
 
-	using float2x2 = matrix<2, float>;
-	using float3x3 = matrix<3, float>;
-	using float4x4 = matrix<4, float>;
+	using float2x2 = matrix<float, 2>;
+	using float3x3 = matrix<float, 3>;
+	using float4x4 = matrix<float, 4>;
 
-	using double2x2 = matrix<2, double>;
-	using double3x3 = matrix<3, double>;
-	using double4x4 = matrix<4, double>;
+	using double2x2 = matrix<double, 2>;
+	using double3x3 = matrix<double, 3>;
+	using double4x4 = matrix<double, 4>;
 
 	//define vector type aliases
 	using int2 = std::tuple<int, int>;

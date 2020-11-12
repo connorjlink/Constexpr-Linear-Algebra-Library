@@ -2,7 +2,7 @@ module;
 #include <vector>
 export module mesh;
 
-export namespace core::prim
+export namespace core
 {
 	//define primitive type aliases
 	template<typename T>
@@ -10,14 +10,11 @@ export namespace core::prim
 
 	template<typename T>
 	struct Quad { T p1, p2, p3, p4; };
-}
 
-export namespace core::mesh
-{
 	//define mesh type aliases
 	template<typename T>
-	using mesh3 = std::vector<core::prim::Triangle<T>>;
+	using mesh3 = std::vector<core::Triangle<T>>;
 
 	template<typename T>
-	using mesh4 = std::vector<core::prim::Quad<T>>;
+	using mesh4 = std::vector<core::Quad<T>>;
 }

@@ -57,7 +57,6 @@ export namespace std
 	template <typename T, typename ...Ts>
 	concept are_same = std::conjunction_v<std::is_same<T, Ts>...>;
 
-
 	auto count_lines(std::string&& filepath) noexcept
 	{
 		std::size_t numLines = static_cast<std::size_t>(0);

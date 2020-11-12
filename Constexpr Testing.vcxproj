@@ -185,44 +185,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="acos.hpp" />
-    <ClInclude Include="acosh.hpp" />
-    <ClInclude Include="asin.hpp" />
-    <ClInclude Include="asinh.hpp" />
-    <ClInclude Include="atan.hpp" />
-    <ClInclude Include="atan2.hpp" />
-    <ClInclude Include="atanh.hpp" />
-    <ClInclude Include="beta.hpp" />
-    <ClInclude Include="binomial_coef.hpp" />
-    <ClInclude Include="cos.hpp" />
-    <ClInclude Include="cosh.hpp" />
-    <ClInclude Include="erf.hpp" />
-    <ClInclude Include="erf_inv.hpp" />
-    <ClInclude Include="exp.hpp" />
-    <ClInclude Include="expm1.hpp" />
-    <ClInclude Include="factorial.hpp" />
     <ClInclude Include="GameEngine.hpp" />
-    <ClInclude Include="gcd.hpp" />
-    <ClInclude Include="gcem.hpp" />
-    <ClInclude Include="incomplete_beta.hpp" />
-    <ClInclude Include="incomplete_beta_inv.hpp" />
-    <ClInclude Include="incomplete_gamma.hpp" />
-    <ClInclude Include="incomplete_gamma_inv.hpp" />
-    <ClInclude Include="lbeta.hpp" />
-    <ClInclude Include="lcm.hpp" />
-    <ClInclude Include="lgamma.hpp" />
-    <ClInclude Include="lmgamma.hpp" />
-    <ClInclude Include="log.hpp" />
-    <ClInclude Include="log1p.hpp" />
-    <ClInclude Include="log2.hpp" />
-    <ClInclude Include="log_binomial_coef.hpp" />
-    <ClInclude Include="pow.hpp" />
-    <ClInclude Include="pow_integral.hpp" />
-    <ClInclude Include="sin.hpp" />
-    <ClInclude Include="sinh.hpp" />
-    <ClInclude Include="tan.hpp" />
-    <ClInclude Include="tanh.hpp" />
-    <ClInclude Include="tgamma.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core.ixx" />

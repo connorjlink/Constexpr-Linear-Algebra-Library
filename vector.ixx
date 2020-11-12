@@ -3,25 +3,26 @@ module;
 #include <type_traits>
 #include <functional>
 #include <concepts>
-#include "gcem.hpp"
 export module vector;
 
 import stdex;
 
-export constexpr int add = 0
-export constexpr int remove = 1;
-
-export namespace cla::vec
+export enum class mod
 {
-	template<int op, typename T = int, typename... Ts>
+	add, sub
+};
+
+export namespace cla
+{
+	template<mod op, typename T = int, typename... Ts>
 	constexpr auto modify(const std::tuple<Ts...>& vec, T&& val = 0) noexcept requires std::are_same<T, Ts...>
 	{
-		if constexpr (op == add)
+		if constexpr (op == mod::add)
 		{
 			return std::tuple_cat(vec, std::make_tuple(val));
 		}
 
-		if constexpr (op == remove)
+		if constexpr (op == mod::remove)
 		{
 			return std::flatten(vec);
 		}
@@ -64,26 +65,26 @@ export namespace cla::vec
 	template<typename... Ts>
 	constexpr auto lengthSquared(const std::tuple<Ts...>& vec) noexcept
 	{
-		return cla::vec::sum(cla::vec::apply<std::multiplies<>>(vec, vec));
+		return cla::sum(cla::apply<std::multiplies<>>(vec, vec));
 	}
 
-	template<typename... Ts>
+	template<typename... Ts, typename T = std::common_type_t<Ts>>
 	constexpr auto length(const std::tuple<Ts...>& vec) noexcept
 	{
-		return gcem::sqrt(lengthSquared(vec));
+		return (T)std::sqrt(lengthSquared(vec));
 	}
 
 	template<typename... Ts>
 	constexpr auto normalize(const std::tuple<Ts...>& vec) noexcept
 	{
-		return cla::vec::apply<std::divides<>>(vec, (cla::vec::length(vec)));
+		return cla::apply<std::divides<>>(vec, (cla::length(vec)));
 	}
 
 	template<bool Normalize = false, typename... Ts>
 	constexpr auto dot(const std::tuple<Ts...>& vec1, const std::tuple<Ts...>& vec2) noexcept
 	{
-		if constexpr (Normalize) return cla::vec::sum(std::tuple<Ts...>{ cla::vec::apply<std::multiplies<>>(cla::vec::normalize(vec1), cla::vec::normalize(vec2)) });
-		else return cla::vec::sum(std::tuple<Ts...>{ cla::vec::apply<std::multiplies<>>(vec1, vec2) });
+		if constexpr (Normalize) return cla::sum(std::tuple<Ts...>{ cla::apply<std::multiplies<>>(cla::normalize(vec1), cla::normalize(vec2)) });
+		else return cla::sum(std::tuple<Ts...>{ cla::apply<std::multiplies<>>(vec1, vec2) });
 	}
 
 	template<typename... Ts>
@@ -115,16 +116,22 @@ export namespace cla::vec
 	{
 		std::array<T, S> outVec;
 
-		std::array<T, S> inVec = std::as_array(vec);
+		//std::array<T, S> inVec = std::as_array(vec);
 
 		for (auto i = 0; i < S; ++i)
 		{
 			outVec[i] = 0;
 
-			for (auto j = 0; j < S; ++j)
+			//for (auto j = 0; j < S; ++j)
+			//{
+			//	outVec[i] += mat[i][j] * inVec[j];
+			//}
+
+			[&]<std::size_t... j>(std::index_sequence<j...>)
 			{
-				outVec[i] += mat[i][j] * inVec[j];
+				((outVec[i] += mat[i][j] * std::get<j>(vec)) , ...);
 			}
+			(std::make_index_sequence<S>{});
 		}
 
 		return std::as_tuple<Ts...>(outVec);
