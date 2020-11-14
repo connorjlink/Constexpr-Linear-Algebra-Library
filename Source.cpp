@@ -1,11 +1,10 @@
-//#define PGE_APPLICATION
-//#include "GameEngine.hpp"
+//import stdex;
+//import core;
+//import vector;
+//import matrix;
+//import trig;
 
-import stdex;
-import core;
-import vector;
-import matrix;
-import trig;
+//import engine;
 
 constexpr auto screenWidth = 2560.0f;
 constexpr auto screenHeight = 1440.0f;
@@ -18,7 +17,7 @@ constexpr auto far = 10.0f;
 
 int main(void)
 {
-	auto matProj = cla::projection(fov, aspectRatio, near, far);
+	//auto matProj = cla::projection<float>(fov, aspectRatio, near, far);
 
 	return 0;
 }

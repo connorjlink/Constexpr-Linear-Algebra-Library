@@ -11,8 +11,33 @@ export namespace std
 	constexpr auto half_pi_t = pi_t / 2.0f;
 	constexpr auto two_pi_t = pi_t * 2.0f;
 
-	template<typename V, typename... Ts>
-	constexpr auto make_array(Ts&&... t) noexcept -> std::array<V, sizeof...(Ts)>
+	template<class T>
+	constexpr T my_abs(const T& arg) noexcept
+	{
+		if (std::is_constant_evaluated()) return (arg < T{}) ? -arg : arg;
+		else return static_cast<T>(std::fabs(arg));
+	}
+
+	template<class T>
+	constexpr T my_sqrt(const T& arg) noexcept
+	{
+		if (std::is_constant_evaluated())
+		{
+			T z = T{ 1 };
+
+			for (int i = 0; i < 10; ++i)
+			{
+				z -= (z * z - arg) / (2 * z);
+			}
+
+			return z;
+		}
+
+		else return static_cast<T>(std::sqrt(arg));
+	}
+
+	template<typename T, typename... Ts>
+	constexpr auto make_array(Ts&&... t) noexcept -> std::array<T, sizeof...(Ts)>
 	{
 		return { { std::forward<Ts>(t)... } };
 	}
@@ -37,19 +62,19 @@ export namespace std
 	}
 
 	template<typename T, std::size_t... S>
-	constexpr auto make_tuple_helper(T const& other, std::index_sequence<S...>)
+	constexpr auto make_tuple_helper(const T& other, std::index_sequence<S...>)
 	{
 		return std::make_tuple(std::get<S>(other)...);
 	}
 
 	template<typename... Ts>
-	constexpr auto flatten(std::tuple<Ts...> const& other)
+	constexpr auto flatten(const std::tuple<Ts...>& other)
 	{
 		return std::make_tuple_helper(other, std::make_index_sequence < sizeof...(Ts) - std::size_t{ 1 } > {});
 	}
 
 	template<>
-	constexpr auto flatten(std::tuple<> const& other)
+	constexpr auto flatten(const std::tuple<>& other)
 	{
 		return other;
 	}

@@ -185,10 +185,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="GameEngine.hpp" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="core.ixx" />
+    <ClCompile Include="engine.ixx" />
     <ClCompile Include="matrix.ixx" />
     <ClCompile Include="mesh.ixx" />
     <ClCompile Include="Source.cpp" />

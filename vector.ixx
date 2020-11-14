@@ -29,27 +29,27 @@ export namespace cla
 	}
 
 	template<typename binaryop = std::multiplies<void>, typename T, typename... Ts>
-	constexpr auto apply(const std::tuple<Ts...>& vec, T&& operand) noexcept
+	constexpr auto apply(const std::tuple<Ts...>& vec, const T& operand) noexcept
 	{
 		std::tuple<Ts...> outVec;
-
+	
 		[&]<std::size_t... i>(std::index_sequence<i...>)
 		{
-			((std::get<i>(outVec) = binaryop{}(std::get<i>(vec), operand)), ...);
+			((std::get<i>(outVec) = binaryop{}(std::get<i>(vec), operand)) , ...);
 		}
 		(std::make_index_sequence<sizeof...(Ts)>{});
-
+	
 		return outVec;
 	}
 
 	template<typename binaryop = std::multiplies<void>, typename... Ts>
-	constexpr auto apply(const std::tuple<Ts...>& vec1, const std::tuple<Ts...>& vec2) noexcept
+	constexpr auto reduce(const std::tuple<Ts...>& vec1, const std::tuple<Ts...>& vec2) noexcept
 	{
 		std::tuple<Ts...> outVec;
 
 		[&]<std::size_t... i>(std::index_sequence<i...>)
 		{
-			((std::get<i>(outVec) = binaryop{}(std::get<i>(vec1), std::get<i>(vec2))), ...);
+			((std::get<i>(outVec) = binaryop{}(std::get<i>(vec1), std::get<i>(vec2))) , ...);
 		}
 		(std::make_index_sequence<sizeof...(Ts)>{});
 
@@ -65,13 +65,13 @@ export namespace cla
 	template<typename... Ts>
 	constexpr auto lengthSquared(const std::tuple<Ts...>& vec) noexcept
 	{
-		return cla::sum(cla::apply<std::multiplies<>>(vec, vec));
+		return cla::sum(cla::reduce<std::multiplies<>>(vec, vec));
 	}
 
-	template<typename... Ts, typename T = std::common_type_t<Ts>>
+	template<typename... Ts>
 	constexpr auto length(const std::tuple<Ts...>& vec) noexcept
 	{
-		return (T)std::sqrt(lengthSquared(vec));
+		return std::my_sqrt(cla::lengthSquared(vec));
 	}
 
 	template<typename... Ts>
