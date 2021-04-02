@@ -6,134 +6,88 @@ module;
 export module vector;
 
 import stdex;
-
-export enum class mod
-{
-	add, sub
-};
+import core;
 
 export namespace cla
 {
-	template<mod op, typename T = int, typename... Ts>
-	constexpr auto modify(const std::tuple<Ts...>& vec, T&& val = 0) noexcept requires std::are_same<T, Ts...>
+	template<typename binaryop = std::multiplies<void>, typename T>
+	constexpr auto apply(const cla::v3d_generic<T>& vec, const T& operand) noexcept
 	{
-		if constexpr (op == mod::add)
-		{
-			return std::tuple_cat(vec, std::make_tuple(val));
-		}
+		cla::vf3d outVec;
 
-		if constexpr (op == mod::remove)
-		{
-			return std::flatten(vec);
-		}
-	}
-
-	template<typename binaryop = std::multiplies<void>, typename T, typename... Ts>
-	constexpr auto apply(const std::tuple<Ts...>& vec, const T& operand) noexcept
-	{
-		std::tuple<Ts...> outVec;
-	
-		[&]<std::size_t... i>(std::index_sequence<i...>)
-		{
-			((std::get<i>(outVec) = binaryop{}(std::get<i>(vec), operand)) , ...);
-		}
-		(std::make_index_sequence<sizeof...(Ts)>{});
-	
-		return outVec;
-	}
-
-	template<typename binaryop = std::multiplies<void>, typename... Ts>
-	constexpr auto reduce(const std::tuple<Ts...>& vec1, const std::tuple<Ts...>& vec2) noexcept
-	{
-		std::tuple<Ts...> outVec;
-
-		[&]<std::size_t... i>(std::index_sequence<i...>)
-		{
-			((std::get<i>(outVec) = binaryop{}(std::get<i>(vec1), std::get<i>(vec2))) , ...);
-		}
-		(std::make_index_sequence<sizeof...(Ts)>{});
+		outVec.x = binaryop{}(vec.x, operand);
+		outVec.y = binaryop{}(vec.y, operand);
+		outVec.z = binaryop{}(vec.z, operand);
 
 		return outVec;
 	}
 
-	template<typename... Ts>
-	constexpr auto sum(const std::tuple<Ts...>& vec) noexcept
+	template<typename binaryop = std::multiplies<void>, typename T>
+	constexpr auto reduce(const cla::v3d_generic<T>& vec1, const cla::v3d_generic<T>& vec2) noexcept
 	{
-		return std::apply([](auto&&... v) { return (v + ...); }, vec);
+		cla::vf3d outVec;
+
+		outVec.x = binaryop{}(vec1.x, vec2.x);
+		outVec.y = binaryop{}(vec1.y, vec2.y);
+		outVec.z = binaryop{}(vec1.z, vec2.z);
+
+		return outVec;
 	}
 
-	template<typename... Ts>
-	constexpr auto lengthSquared(const std::tuple<Ts...>& vec) noexcept
+	template<typename T>
+	constexpr auto sum(const cla::v3d_generic<T>& vec) noexcept
+	{
+		return (vec.x + vec.y + vec.z);
+	}
+
+	template<typename T>
+	constexpr auto length2(const cla::v3d_generic<T>& vec) noexcept
 	{
 		return cla::sum(cla::reduce<std::multiplies<>>(vec, vec));
 	}
 
-	template<typename... Ts>
-	constexpr auto length(const std::tuple<Ts...>& vec) noexcept
+	template<typename T>
+	constexpr auto length(const cla::v3d_generic<T>& vec) noexcept
 	{
-		return std::my_sqrt(cla::lengthSquared(vec));
+		return std::my_sqrt(cla::length2(vec));
 	}
 
-	template<typename... Ts>
-	constexpr auto normalize(const std::tuple<Ts...>& vec) noexcept
+	template<typename T>
+	constexpr auto normalize(const cla::v3d_generic<T>& vec) noexcept
 	{
 		return cla::apply<std::divides<>>(vec, (cla::length(vec)));
 	}
 
-	template<bool Normalize = false, typename... Ts>
-	constexpr auto dot(const std::tuple<Ts...>& vec1, const std::tuple<Ts...>& vec2) noexcept
+	template<bool Normalize = false, typename T>
+	constexpr auto dot(const cla::v3d_generic<T>& vec1, const cla::v3d_generic<T>& vec2) noexcept
 	{
-		if constexpr (Normalize) return cla::sum(std::tuple<Ts...>{ cla::apply<std::multiplies<>>(cla::normalize(vec1), cla::normalize(vec2)) });
-		else return cla::sum(std::tuple<Ts...>{ cla::apply<std::multiplies<>>(vec1, vec2) });
+		if constexpr (Normalize) return cla::sum(cla::reduce<std::multiplies<>>(cla::normalize(vec1), cla::normalize(vec2)));
+		else return cla::sum(cla::reduce<std::multiplies<>>(vec1, vec2));
 	}
 
-	template<typename... Ts>
-	constexpr auto cross(const std::tuple<Ts...>& vec1, const std::tuple<Ts...>& vec2) noexcept requires (sizeof...(Ts) == 3)
+	template<typename T>
+	constexpr auto cross(const cla::v3d_generic<T>& vec1, const cla::v3d_generic<T>& vec2) noexcept
 	{
-		return std::make_tuple
-		(
-			((std::get<1>(vec1) * std::get<2>(vec2)) - (std::get<2>(vec1) * std::get<1>(vec2))),
-			((std::get<2>(vec1) * std::get<0>(vec2)) - (std::get<0>(vec1) * std::get<2>(vec2))),
-			((std::get<0>(vec1) * std::get<1>(vec2)) - (std::get<1>(vec1) * std::get<0>(vec2)))
-		);
+		cla::v3d_generic<T> outVec;
+
+		outVec.x = ((vec1.y * vec2.z) - (vec1.z * vec2.y));
+		outVec.y = ((vec1.z * vec2.x) - (vec1.x * vec2.z));
+		outVec.z = ((vec1.x * vec2.y) - (vec1.y * vec2.x));
+		outVec.w = vec1.w;
+
+		return outVec;
 	}
 
-	template<typename... Ts>
-	constexpr auto cross(const std::tuple<Ts...>& vec1, const std::tuple<Ts...>& vec2) noexcept requires (sizeof...(Ts) == 4)
+	template<typename T, std::size_t S>
+	constexpr auto mul(const cla::v3d_generic<T>& vec, const cla::matrix<T, S>& mat) noexcept
 	{
-		return std::make_tuple
-		(
-			((std::get<1>(vec1) * std::get<2>(vec2)) - (std::get<2>(vec1) * std::get<1>(vec2))),
-			((std::get<2>(vec1) * std::get<0>(vec2)) - (std::get<0>(vec1) * std::get<2>(vec2))),
-			((std::get<0>(vec1) * std::get<1>(vec2)) - (std::get<1>(vec1) * std::get<0>(vec2))),
-			1.0f
-		);
-	}
+		cla::v3d_generic<T> outVec;
 
+		outVec.x = vec.x * mat[0][0] + vec.y * mat[1][0] + vec.z * mat[2][0] + mat[3][0];
+		outVec.y = vec.x * mat[0][1] + vec.y * mat[1][1] + vec.z * mat[2][1] + mat[3][1];
+		outVec.z = vec.x * mat[0][2] + vec.y * mat[1][2] + vec.z * mat[2][2] + mat[3][2];
+		outVec.w = vec.x * mat[0][3] + vec.y * mat[1][3] + vec.z * mat[2][3] + mat[3][3];
 
-	template<typename T, std::size_t S, typename... Ts>
-	constexpr auto mul(const std::tuple<Ts...>& vec, const std::array<std::array<T, S>, S>& mat) noexcept requires (S == sizeof...(Ts))
-	{
-		std::array<T, S> outVec;
-
-		//std::array<T, S> inVec = std::as_array(vec);
-
-		for (auto i = 0; i < S; ++i)
-		{
-			outVec[i] = 0;
-
-			//for (auto j = 0; j < S; ++j)
-			//{
-			//	outVec[i] += mat[i][j] * inVec[j];
-			//}
-
-			[&]<std::size_t... j>(std::index_sequence<j...>)
-			{
-				((outVec[i] += mat[i][j] * std::get<j>(vec)) , ...);
-			}
-			(std::make_index_sequence<S>{});
-		}
-
-		return std::as_tuple<Ts...>(outVec);
+		return outVec;
 	}
 }

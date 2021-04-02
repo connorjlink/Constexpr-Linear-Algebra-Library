@@ -13,7 +13,7 @@ import vector;
 export namespace cla
 {
 	template<typename binaryop = std::multiplies<void>, typename T, std::size_t S>
-	constexpr auto apply(const std::array<std::array<T, S>, S>& mat1, const T& operand)
+	constexpr auto apply(const cla::matrix<T, S>& mat1, const T& operand)
 	{
 		std::array<std::array<T, S>, S> mat;
 
@@ -29,7 +29,7 @@ export namespace cla
 	}
 
 	template<typename binaryop = std::multiplies<void>, typename T, std::size_t S>
-	constexpr auto apply(const std::array<std::array<T, S>, S>& mat1, const std::array<std::array<T, S>, S>& mat2)
+	constexpr auto apply(const cla::matrix<T, S>& mat1, const cla::matrix<T, S>& mat2)
 	{
 		std::array<std::array<T, S>, S> mat;
 
@@ -45,7 +45,7 @@ export namespace cla
 	}
 
 	template<typename T, std::size_t S>
-	constexpr auto compose(const std::array<std::array<T, S>, S>& mat1, const std::array<std::array<T, S>, S>& mat2) noexcept
+	constexpr auto compose(const cla::matrix<T, S>& mat1, const cla::matrix<T, S>& mat2) noexcept
 	{
 		std::array<std::array<T, S>, S> mat;
 
@@ -80,40 +80,70 @@ export namespace cla
 		return mat;
 	}
 
-	template<typename T>
-	constexpr auto rotationX(const T& angle) noexcept
+	const auto rotationX(const float& theta) noexcept
 	{
-		return std::array<std::array<T, 4>, 4>
+		cla::float4x4 mat;
+
+		for (auto i = 0; i < 4; ++i)
 		{
-			(T)1.0L, (T)0.0L, (T)0.0L, (T)0.0L,
-			(T)0.0L, (T)std::cos(angle), -(T)std::sin(angle), (T)0.0L,
-			(T)0.0L, (T)std::sin(angle),  (T)std::cos(angle), (T)0.0L,
-			(T)0.0L, (T)0.0L, (T)0.0L, (T)1.0L
-		};
+			for (auto j = 0; j < 4; ++j)
+			{
+				mat[i][j] = 0.0f;
+			}
+		}
+
+		mat[0][0] = 1.0f;
+		mat[1][1] = std::cosf(theta);
+		mat[1][2] = std::sinf(theta);
+		mat[2][1] = -std::sinf(theta);
+		mat[2][2] = std::cosf(theta);
+		mat[3][3] = 1.0f;
+
+		return mat;
 	}
 
-	template<typename T>
-	constexpr auto rotationY(const T& angle) noexcept
+	const auto rotationY(const float& theta) noexcept
 	{
-		return std::array<std::array<T, 4>, 4>
+		cla::float4x4 mat;
+
+		for (auto i = 0; i < 4; ++i)
 		{
-			(T)std::cos(angle), (T)0.0L, (T)std::sin(angle), (T)0.0L,
-			(T)0.0L, (T)1.0L, (T)0.0L, (T)0.0L,
-			-(T)std::sin(angle), (T)0.0L, (T)std::cos(angle), (T)0.0L,
-			(T)0.0L, (T)0.0L, (T)0.0L, (T)1.0L
-		};
+			for (auto j = 0; j < 4; ++j)
+			{
+				mat[i][j] = 0.0f;
+			}
+		}
+
+		mat[0][0] = std::cosf(theta);
+		mat[1][1] = 1.0f;
+		mat[0][2] = std::sinf(theta);
+		mat[2][0] = -std::sinf(theta);
+		mat[2][2] = std::cosf(theta);
+		mat[3][3] = 1.0f;
+
+		return mat;
 	}
 
-	template<typename T>
-	constexpr auto rotationZ(const T& angle) noexcept
+	const auto rotationZ(const float& theta) noexcept
 	{
-		return std::array<std::array<T, 4>, 4>
+		cla::float4x4 mat;
+		
+		for (auto i = 0; i < 4; ++i)
 		{
-			(T)std::cos(angle), (T)std::sin(angle), (T)0.0L, (T)0.0L,
-			(T)std::sin(angle), (T)std::cos(angle), (T)0.0L, (T)0.0L,
-			(T)0.0L, (T)0.0L, (T)1.0L, (T)0.0L,
-			(T)0.0L, (T)0.0L, (T)0.0L, (T)1.0L
-		};
+			for (auto j = 0; j < 4; ++j)
+			{
+				mat[i][j] = 0.0f;
+			}
+		}
+
+		mat[0][0] = std::cosf(theta);
+		mat[0][1] = std::sinf(theta);
+		mat[1][0] = -std::sinf(theta);
+		mat[1][1] = std::cosf(theta);
+		mat[2][2] = 1.0f;
+		mat[3][3] = 1.0f;
+
+		return mat;
 	}
 
 	template<typename T>
@@ -127,42 +157,53 @@ export namespace cla
 	{
 		return std::array<std::array<T, 4>, 4>
 		{
-			(T)1.0L, (T)0.0L, (T)0.0L, (T)0.0L,
-			(T)0.0L, (T)1.0L, (T)0.0L, (T)0.0L,
-			(T)0.0L, (T)0.0L, (T)1.0L, (T)0.0L,
-			x, y, z, (T)1.0L
+			(T)1.0f, (T)0.0f, (T)0.0f, (T)0.0f,
+			(T)0.0f, (T)1.0f, (T)0.0f, (T)0.0f,
+			(T)0.0f, (T)0.0f, (T)1.0f, (T)0.0f,
+			x, y, z, (T)1.0f
 		};
 	}
 
 	template<typename T>
-	constexpr auto projection(const T& fov, const T& aspectRatio, const T& near, const T& far) noexcept
+	const auto projection(const T& fov, const T& aspectRatio, const T& near, const T& far) noexcept
 	{
-		T fovRad = static_cast<T>(1) / std::tan(core::radians(fov * static_cast<T>(0.5L)));
+		cla::float4x4 mat;
 
-		return std::array<std::array<T, 4>, 4>
+		float fovRad = 1.0f / std::tanf(fov * 0.5f / 180.0f * 3.14159f);
+		
+		for (auto i = 0; i < 4; ++i)
 		{
-			(aspectRatio* fovRad), (T)0.0L, (T)0.0L, (T)0.0L,
-			(T)0.0L, fovRad, (T)0.0L, (T)0.0L,
-			(T)0.0L, (T)0.0L, (far / (far - near)), (T)1.0L,
-			(T)0.0L, (T)0.0L, ((-far * near) / (far - near)), (T)0.0L
-		};
+			for (auto j = 0; j < 4; ++j)
+			{
+				mat[i][j] = 0.0f;
+			}
+		}
+
+		mat[0][0] = aspectRatio * fovRad;
+		mat[1][1] = fovRad;
+		mat[2][2] = far / (far - near);
+		mat[3][2] = (-far * near) / (far - near);
+		mat[2][3] = 1.0f;
+
+		return mat;
 	}
 
-	template<typename T, typename... Ts>
-	constexpr auto pointAt(const std::tuple<Ts...>& pos, const std::tuple<Ts...>& target, const std::tuple<Ts...>& up) noexcept requires (sizeof...(Ts) == 3) or (sizeof...(Ts) == 4)
+	template<typename T>
+	constexpr auto pointAt(const cla::v3d_generic<T>& pos, const cla::v3d_generic<T>& target, const cla::v3d_generic<T>& up) noexcept
 	{
-		auto newForward = cla::normalize(cla::apply<std::minus<>>(target, pos));
+		cla::v3d_generic<T> newForward = cla::normalize(cla::reduce<std::minus<>>(target, pos));
 
-		auto newUp = cla::normalize(cla::apply<std::minus<>>(up, cla::apply<std::multiplies<>>(newForward, cla::dot(up, newForward))));
+		auto newUp = cla::normalize(cla::reduce<std::minus<>>(up, cla::apply<std::multiplies<>>(newForward, cla::dot(up, newForward))));
 
 		auto newRight = cla::cross(newUp, newForward);
-
+		
 		return std::array<std::array<T, 4>, 4>
 		{
-			std::get<0>(newRight),   std::get<1>(newRight),   std::get<2>(newRight),   0.0f,
-			std::get<0>(newUp),      std::get<1>(newUp),      std::get<2>(newUp),      0.0f,
-			std::get<0>(newForward), std::get<1>(newForward), std::get<2>(newForward), 0.0f,
-			std::get<0>(pos),        std::get<1>(pos),        std::get<2>(pos),        1.0f
+			newRight.x  , newRight.y  , newRight.z  , 0.0f,
+			newUp.x     , newUp.y     , newUp.z     , 0.0f,
+			newForward.x, newForward.y, newForward.z, 0.0f,
+			pos.x       , pos.y       , pos.z       , 1.0f
 		};
+
 	}
 }

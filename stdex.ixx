@@ -5,6 +5,8 @@ module;
 #include <fstream>
 export module stdex;
 
+import core;
+
 export namespace std
 {
 	constexpr auto pi_t = 3.14159265f;
@@ -33,7 +35,7 @@ export namespace std
 			return z;
 		}
 
-		else return static_cast<T>(std::sqrt(arg));
+		else return static_cast<T>(std::sqrtf(arg));
 	}
 
 	template<typename T, typename... Ts>
@@ -62,13 +64,13 @@ export namespace std
 	}
 
 	template<typename T, std::size_t... S>
-	constexpr auto make_tuple_helper(const T& other, std::index_sequence<S...>)
+	constexpr auto make_tuple_helper(const T& other, std::index_sequence<S...>) noexcept
 	{
 		return std::make_tuple(std::get<S>(other)...);
 	}
 
 	template<typename... Ts>
-	constexpr auto flatten(const std::tuple<Ts...>& other)
+	constexpr auto flatten(const std::tuple<Ts...>& other) noexcept
 	{
 		return std::make_tuple_helper(other, std::make_index_sequence < sizeof...(Ts) - std::size_t{ 1 } > {});
 	}
@@ -77,6 +79,65 @@ export namespace std
 	constexpr auto flatten(const std::tuple<>& other)
 	{
 		return other;
+	}
+
+	template<typename T, typename... Ts>
+	constexpr auto as_custom(const std::tuple<Ts...>& vec) noexcept requires (sizeof...(Ts) == 3 || sizeof...(Ts) == 4)
+	{
+		typename cla::vf3d outVec(0.0f, 0.0f, 0.0f);
+
+		if constexpr (sizeof...(Ts) == 3)
+		{
+			outVec.x = std::get<0>(vec);
+			outVec.y = std::get<1>(vec);
+			outVec.z = std::get<2>(vec);
+		}
+
+		else
+		{
+			outVec.x = std::get<0>(vec);
+			outVec.y = std::get<1>(vec);
+			outVec.z = std::get<2>(vec);
+			outVec.w = std::get<3>(vec);
+		}
+
+		return outVec;
+	}
+
+	template<typename T, std::size_t S>
+	constexpr auto vec_array(const cla::v3d_generic<T>& vec) noexcept requires (S == 4)
+	{
+		std::array<T, S> outArray;
+
+		outArray[0] = vec.x;
+		outArray[1] = vec.y;
+		outArray[2] = vec.z;
+		outArray[3] = vec.w;
+		
+		return outArray;
+	}
+
+	template<typename T, std::size_t S>
+	constexpr auto as_vector(const std::array<T, S>& arr) noexcept requires (S == 4) || (S == 3)
+	{
+		cla::vf3d outVec;
+
+		if constexpr (S == 3)
+		{
+			outVec.x = arr[0];
+			outVec.y = arr[1];
+			outVec.z = arr[2];
+		}
+
+		else
+		{
+			outVec.x = arr[0];
+			outVec.y = arr[1];
+			outVec.z = arr[2];
+			outVec.w = arr[3];
+		}
+
+		return outVec;
 	}
 
 	template <typename T, typename ...Ts>

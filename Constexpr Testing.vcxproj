@@ -122,6 +122,7 @@
       <EnableModules>true</EnableModules>
       <DisableSpecificWarnings>5050</DisableSpecificWarnings>
       <CallingConvention>StdCall</CallingConvention>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -173,6 +174,7 @@
       <EnableModules>true</EnableModules>
       <DisableSpecificWarnings>5050</DisableSpecificWarnings>
       <CallingConvention>StdCall</CallingConvention>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -186,13 +188,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="core.ixx" />
-    <ClCompile Include="engine.ixx" />
     <ClCompile Include="matrix.ixx" />
     <ClCompile Include="mesh.ixx" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="stdex.ixx" />
     <ClCompile Include="trig.ixx" />
     <ClCompile Include="vector.ixx" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="engine.hpp" />
+    <ClInclude Include="stb_image.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

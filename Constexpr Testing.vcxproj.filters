@@ -39,8 +39,13 @@
     <ClCompile Include="matrix.ixx">
       <Filter>Modules</Filter>
     </ClCompile>
-    <ClCompile Include="engine.ixx">
-      <Filter>Modules</Filter>
-    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="engine.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stb_image.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
