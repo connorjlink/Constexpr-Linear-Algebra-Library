@@ -2,7 +2,6 @@ module;
 #include <concepts>
 export module trig;
 
-
 export namespace core
 {
 	template<typename T = float>

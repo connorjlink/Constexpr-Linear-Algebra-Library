@@ -189,7 +189,6 @@
   <ItemGroup>
     <ClCompile Include="core.ixx" />
     <ClCompile Include="matrix.ixx" />
-    <ClCompile Include="mesh.ixx" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="stdex.ixx" />
     <ClCompile Include="trig.ixx" />

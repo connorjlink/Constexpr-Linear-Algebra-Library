@@ -7,6 +7,9 @@ export module stdex;
 
 import core;
 
+#pragma warning(suppress: 4455)
+export constexpr std::size_t operator "" z(unsigned long long n) { return n; }
+
 export namespace std
 {
 	constexpr auto pi_t = 3.14159265f;
@@ -156,53 +159,5 @@ export namespace std
 		}
 
 		return numLines;
-	}
-
-	template<typename T, std::size_t S>
-	std::ostream& operator<<(std::ostream& stream, const std::array<std::array<T, S>, S>& mat) noexcept
-	{
-		stream << "[ ";
-
-		for (auto i = 0; i < S; ++i)
-		{
-			for (auto j = 0; j < S; ++j)
-			{
-				stream << mat[i][j];
-
-				if (j != (S - 1)) stream << ' ';
-			}
-
-			stream << " ]" << '\n';
-
-			if (i != (S - 1)) stream << "[ ";
-		}
-
-		return stream;
-	}
-
-	template<typename... Ts>
-	std::ostream& operator<<(std::ostream& stream, const std::tuple<Ts...>& vec) noexcept
-	{
-		if constexpr (bool(sizeof...(Ts)))
-		{
-			stream << "[ ";
-
-			[&]<std::size_t... i>(std::index_sequence<i...>)
-			{
-				((stream << std::get<i>(vec) << ", "), ...);
-			}
-			(std::make_index_sequence<(sizeof...(Ts) - 1)>{});
-
-			stream << std::get<(sizeof...(Ts) - 1)>(vec) << " ]";
-
-			return stream;
-		}
-
-		else
-		{
-			stream << "[ ]";
-
-			return stream;
-		}
 	}
 }

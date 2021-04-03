@@ -30,9 +30,6 @@
     <ClCompile Include="trig.ixx">
       <Filter>Modules</Filter>
     </ClCompile>
-    <ClCompile Include="mesh.ixx">
-      <Filter>Modules</Filter>
-    </ClCompile>
     <ClCompile Include="core.ixx">
       <Filter>Modules</Filter>
     </ClCompile>

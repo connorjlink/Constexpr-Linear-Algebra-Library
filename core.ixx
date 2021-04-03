@@ -3,6 +3,10 @@ module;
 #include <array>
 #include <string>
 #include <cmath>
+#include <vector>
+#include <sstream>
+#include <fstream>
+#include "engine.hpp"
 export module core;
 
 export namespace cla
@@ -24,28 +28,15 @@ export namespace cla
 	using double3x3 = matrix<double, 3>;
 	using double4x4 = matrix<double, 4>;
 
-	//define vector type aliases
-	using int2 = std::tuple<int, int>;
-	using int3 = std::tuple<int, int, int>;
-	using int4 = std::tuple<int, int, int, int>;
 
-	using float2 = std::tuple<float, float>;
-	using float3 = std::tuple<float, float, float>;
-	using float4 = std::tuple<float, float, float, float>;
-
-	using double2 = std::tuple<double, double>;
-	using double3 = std::tuple<double, double, double>;
-	using double4 = std::tuple<double, double, double, double>;
-
-
-	template<typename T>
+	template<typename T = float>
 	struct v3d_generic
 	{
-		T x = (T)0, y = (T)0, z = (T)0, w = (T)1;
+		T x = (T)0.0f, y = (T)0.0f, z = (T)0.0f, w = (T)1.0f;
 
-		constexpr v3d_generic<T>() : x(0), y(0), z(0), w(1) {}
-		constexpr v3d_generic<T>(T _x, T _y, T _z) : x(_x), y(_y), z(_z), w(1) {}
-		constexpr v3d_generic<T>(const v3d_generic& v) : x(v.x), y(v.y), z(v.z), w(1) {}
+		constexpr v3d_generic<T>() : x((T)0.0f), y((T)0.0f), z((T)0.0f), w((T)1.0f) {}
+		constexpr v3d_generic<T>(T _x, T _y, T _z) : x(_x), y(_y), z(_z), w((T)1.0f) {}
+		constexpr v3d_generic<T>(const v3d_generic& v) : x(v.x), y(v.y), z(v.z), w((T)1.0f) {}
 		v3d_generic& operator=(const v3d_generic& v) = default;
 		bool operator == (const v3d_generic& rhs) const noexcept { return (this->x == rhs.x && this->y == rhs.y && this->z == rhs.z); }
 		bool operator != (const v3d_generic& rhs) const noexcept { return (this->x != rhs.x || this->y != rhs.y || this->z != rhs.z); }
@@ -57,5 +48,54 @@ export namespace cla
 	using vu3d = v3d_generic<uint32_t>;
 	using vf3d = v3d_generic<float>;
 	using vd3d = v3d_generic<double>;
+	
+	//define primitive type aliases
+	template<typename T = float>
+	struct tri
+	{
+		cla::v3d_generic<T> p1, p2, p3;
 
+		olc::Pixel col;
+
+		tri<T>() = default;
+
+		tri<T>(cla::v3d_generic<T> t1, cla::v3d_generic<T> t2, cla::v3d_generic<T> t3, olc::Pixel col) noexcept
+			: p1(t1), p2(t2), p3(t3), col(col) {}
+	};
+
+	std::vector<cla::tri<float>> load(const std::string& filename)
+	{
+		std::ifstream f(filename);
+		if (!f.is_open()) return {};
+
+		std::vector<cla::tri<float>> tris;
+		std::vector<cla::vf3d> verts;
+
+		while (!f.eof())
+		{
+			char line[128];
+			f.getline(line, 128);
+
+			std::stringstream s;
+			s << line;
+
+			char junk;
+
+			if (line[0] == 'v')
+			{
+				cla::vf3d v;
+				s >> junk >> v.x >> v.y >> v.z;
+				verts.push_back(v);
+			}
+
+			if (line[0] == 'f')
+			{
+				int f[3];
+				s >> junk >> f[0] >> f[1] >> f[2];
+				tris.emplace_back(cla::tri<float>(verts[f[0] - 1], verts[f[1] - 1], verts[f[2] - 1], olc::WHITE));
+			}
+		}
+
+		return tris;
+	}
 }

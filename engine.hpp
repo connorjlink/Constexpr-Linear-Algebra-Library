@@ -3009,7 +3009,7 @@ namespace olc
 		{
 			nLastFPS = nFrameCount;
 			fFrameTimer -= 1.0f;
-			std::string sTitle = "OneLoneCoder.com - Pixel Game Engine - " + sAppName + " - FPS: " + std::to_string(nFrameCount);
+			std::string sTitle = sAppName + " - FPS: " + std::to_string(nFrameCount);
 			platform->SetWindowTitle(sTitle);
 			nFrameCount = 0;
 		}
@@ -3265,6 +3265,7 @@ namespace olc
 		void DisplayFrame() override
 		{
 #if defined(OLC_PLATFORM_WINAPI)
+			//SetCursorPos(500, 500);
 			SwapBuffers(glDeviceContext);
 			if (bSync) DwmFlush(); // Woooohooooooo!!!! SMOOOOOOOTH!
 #endif	
@@ -4417,6 +4418,8 @@ namespace olc
 			mapKeys[VK_OEM_MINUS] = Key::MINUS;		// the minus key on any keyboard
 			mapKeys[VK_OEM_PERIOD] = Key::PERIOD;	// the period key on any keyboard
 			mapKeys[VK_CAPITAL] = Key::CAPS_LOCK;
+
+			//ShowCursor(FALSE);
 			return olc::OK;
 		}
 
@@ -4454,12 +4457,20 @@ namespace olc
 				uint16_t x = lParam & 0xFFFF; uint16_t y = (lParam >> 16) & 0xFFFF;
 				int16_t ix = *(int16_t*)&x;   int16_t iy = *(int16_t*)&y;
 				ptrPGE->olc_UpdateMouse(ix, iy);
+				//SetCursorPos(500, 500);
 				return 0;
 			}
 			case WM_SIZE:       ptrPGE->olc_UpdateWindowSize(lParam & 0xFFFF, (lParam >> 16) & 0xFFFF);	return 0;
 			case WM_MOUSEWHEEL:	ptrPGE->olc_UpdateMouseWheel(GET_WHEEL_DELTA_WPARAM(wParam));           return 0;
 			case WM_MOUSELEAVE: ptrPGE->olc_UpdateMouseFocus(false);                                    return 0;
-			case WM_SETFOCUS:	ptrPGE->olc_UpdateKeyFocus(true);                                       return 0;
+			case WM_SETFOCUS:
+			{
+				ptrPGE->olc_UpdateKeyFocus(true);
+
+
+				
+				return 0;
+			}
 			case WM_KILLFOCUS:	ptrPGE->olc_UpdateKeyFocus(false);                                      return 0;
 			case WM_KEYDOWN:	ptrPGE->olc_UpdateKeyState(mapKeys[wParam], true);                      return 0;
 			case WM_KEYUP:		ptrPGE->olc_UpdateKeyState(mapKeys[wParam], false);                     return 0;
