@@ -2,7 +2,7 @@ module;
 #include <concepts>
 export module trig;
 
-export namespace core
+export namespace cla
 {
 	template<typename T = float>
 	constexpr auto radians(T&& degrees) noexcept requires std::floating_point<T>

@@ -1,15 +1,19 @@
-#define OLC_PGE_APPLICATION
+﻿#define OLC_PGE_APPLICATION
 #include "engine.hpp"
 
 #define lookSpeed 2.0f * fElapsedTime
+
+#undef min
+#undef max
 
 import stdex;
 import core;
 import vector;
 import matrix;
+import trig;
 
-constexpr auto screenWidth = 1000.0f, halfScreenWidth = (screenWidth / 2.0f);
-constexpr auto screenHeight = 1000.0f, halfScreenHeight = (screenHeight / 2.0f);
+constexpr auto screenWidth = 600.0f, halfScreenWidth = (screenWidth / 2.0f);
+constexpr auto screenHeight = 600.0f, halfScreenHeight = (screenHeight / 2.0f);
 
 constexpr auto fov = 90.0f;
 constexpr auto aspectRatio = (screenHeight / screenWidth);
@@ -29,11 +33,22 @@ public:
 
 	std::vector<cla::tri<float>> meshLoaded, trisToRaster;
 
-	cla::vf3d cameraPos, cameraVel, lookDir;
+	cla::vf3d cameraAcc, cameraVel, cameraPos, lookDir;
 
 	olc::Renderable gfxTexture;
 
 	float theta = 0.0f, yaw = 0.0f, pitch = 0.0f;
+
+	//θωερψτυιοπλκςηγφδσαζχξωβνμ
+	//ΘΩΕΡΤΨΥΙΟΠΑΣΔΦΓΗςΚΛΖΧΞΩΒΝΜ ∫
+
+	float m = 1.0f;
+	float g = -10.0f;
+	float µ = 100.0f;
+	float λ = 50.0f;
+
+	float α = (µ * g);
+	float ω = (λ * g);
 
 public:
 	bool OnUserCreate() override
@@ -41,79 +56,111 @@ public:
 		matProj = cla::projection(fov, aspectRatio, nearPlane, farPlane);
 		matTrans = cla::translation(0.0f, 0.0f, 10.0f);
 
-		gfxTexture.Load("./solid.png");
+		gfxTexture.Load("./wireframe.png");
 
-		meshLoaded = cla::load("./new2.obj");
+		meshLoaded = cla::loadOBJ("./chess.obj");
+
+		for (auto& t : meshLoaded) t.texture = gfxTexture.Decal();
+
+
+		trisToRaster.reserve(meshLoaded.size());
+		trisToRaster.resize(meshLoaded.size());
 
 		return true;
 	}
 
 	bool OnUserUpdate(float fElapsedTime) override
 	{
-		cla::vf3d target = cla::vf3d(std::cosf(pitch) * std::sinf(yaw), std::sinf(pitch), std::cosf(pitch) * std::cosf(yaw));
-		cla::vf3d forward = cla::apply<std::multiplies<>>(target, 0.5f * fElapsedTime);
-		cla::vf3d up = cla::vf3d(0.0f, 1.0f, 0.0f);
-		cla::vf3d right = cla::cross(up, forward);
-		cla::vf3d angleUp = cla::apply<std::multiplies<>>(cla::cross(cla::normalize(forward), cla::normalize(right)), 0.025f);
-
-
-		if (GetKey(olc::Key::SPACE).bHeld) theta += fElapsedTime;
-
-		if (GetKey(olc::Key::R).bHeld) pitch -= lookSpeed;
-		if (GetKey(olc::Key::F).bHeld) pitch += lookSpeed;
-
-		if (GetKey(olc::Key::LEFT).bHeld)  yaw += lookSpeed;
-		if (GetKey(olc::Key::RIGHT).bHeld) yaw -= lookSpeed;
-
-		//if (GetKey(olc::Key::UP).bHeld)   camera.y += 8.0f * fElapsedTime;
-		//if (GetKey(olc::Key::DOWN).bHeld) camera.y -= 8.0f * fElapsedTime;
-
-		if (GetKey(olc::Key::K).bPressed)
+		auto applyForce = [&](cla::vf3d force, cla::vf3d& accVec)
 		{
-			cameraPos.y = 0.01f;
-			cameraVel.y += 0.02f;
+			auto f = (force / m);
+
+			accVec += (f * fElapsedTime);
+		};
+
+		auto update = [&]()
+		{
+			cameraVel += (cameraAcc * fElapsedTime);
+			cameraPos += (cameraVel * fElapsedTime);
+
+			cameraAcc ^ 0.0f;
+		};
+
+		float mouseSens = 0.002f;
+
+		olc::vf2d mouseDifference;
+		olc::vf2d mouseNow = { (float)GetMouseX(), (float)GetMouseY() };
+		olc::vf2d screenCenter = { halfScreenWidth, halfScreenHeight };
+
+		if (mouseNow != screenCenter)
+		{
+			mouseDifference = screenCenter - mouseNow;
+
+			yaw += mouseSens * mouseDifference.x;
+			pitch += mouseSens * mouseDifference.y;
+
+			SetCursorPos(int(338.0f + halfScreenWidth), int(362.0f + halfScreenHeight));
+
+			if (pitch >= cla::radians(+50.0f)) pitch = cla::radians(+50.0f);
+			if (pitch <= cla::radians(-50.0f)) pitch = cla::radians(-50.0f);
 		}
 
-		(cameraPos.y > 0.0f) ? (cameraVel.y -= 0.025f * fElapsedTime) : (cameraVel.y = 0.0f);
+		DrawStringDecal({ 10.0f, 55.0f }, mouseNow.str(), olc::YELLOW);
 
-		if (GetKey(olc::Key::UP).bHeld)   cameraPos = cla::reduce<std::plus<>>(cameraPos, angleUp);
-		if (GetKey(olc::Key::DOWN).bHeld) cameraPos = cla::reduce<std::minus<>>(cameraPos, angleUp);
+		cla::vf3d target = { std::cosf(pitch) * std::sinf(yaw), std::sinf(pitch), std::cosf(pitch) * std::cosf(yaw) };
+		cla::vf3d forward = { (target.x * (10000.0f * fElapsedTime)), 0.0f, (target.z * (10000.0f * fElapsedTime)) };
 
-		if (GetKey(olc::Key::W).bHeld) cameraVel = cla::reduce<std::plus<>>(cameraVel, forward);
-		if (GetKey(olc::Key::S).bHeld) cameraVel = cla::reduce<std::minus<>>(cameraVel, forward);
+		cla::vf3d up = { 0.0f, 1.0f, 0.0f };
+		cla::vf3d right = cla::cross(up, forward);
 
-		if (GetKey(olc::Key::A).bHeld) cameraVel = cla::reduce<std::plus<>>(cameraVel, right);
-		if (GetKey(olc::Key::D).bHeld) cameraVel = cla::reduce<std::minus<>>(cameraVel, right);
 
-		cameraPos = cla::reduce<std::plus<>>(cameraPos, cameraVel);
+		if (GetKey(olc::Key::SPACE).bHeld and cameraPos.y < 0.02f)
+		{
+			cameraPos.y = 0.01f;
 
-		cameraVel.x /= ((fElapsedTime * 5.0f) + 1.25f);
-		cameraVel.z /= ((fElapsedTime * 5.0f) + 1.25f);
+			cameraVel.y = 7.0f;
+		}
 
-		cla::float4x4 matWorld = cla::compose(cla::rotationY(theta), matTrans);
+		if (GetKey(olc::Key::W).bHeld) cameraAcc += forward;
+		if (GetKey(olc::Key::S).bHeld) cameraAcc -= forward;
 
-		target = cla::reduce<std::plus<>>(cameraPos, target);
+		if (GetKey(olc::Key::A).bHeld) cameraAcc += right;
+		if (GetKey(olc::Key::D).bHeld) cameraAcc -= right;
 
-		cla::float4x4 matView = cla::inverse(cla::pointAt(cameraPos, target, up));
+
+		if (cameraPos.y <= 0.02f) applyForce({ cameraVel.x * α, 0.0f, cameraVel.z * α }, cameraAcc);
+		else applyForce({ cameraVel.x * ω, 0.0f, cameraVel.z * ω }, cameraAcc);
+
+		if (cameraPos.y > 0.0f) cameraVel.y += (g * fElapsedTime);
+		else cameraVel.y = 0.0f, cameraAcc.y = 0.0f;
+		
+
+		update();
+
+		cla::float4x4 matWorld = cla::rotationY(theta) * matTrans;
+
+		target += cameraPos;
+
+		cla::float4x4 matView = ~cla::pointAt(cameraPos, target, up);
 
 		for (auto& t : meshLoaded)
 		{
 			cla::tri<float> triTransformed, triViewed, triProjected;
 
-			triTransformed.p1 = cla::mul(t.p1, matWorld);
-			triTransformed.p2 = cla::mul(t.p2, matWorld);
-			triTransformed.p3 = cla::mul(t.p3, matWorld);
+			triTransformed.p1 = t.p1 * matWorld;
+			triTransformed.p2 = t.p2 * matWorld;
+			triTransformed.p3 = t.p3 * matWorld;
 
-			cla::vf3d line1 = cla::reduce<std::minus<>>(triTransformed.p2, triTransformed.p1);
-			cla::vf3d line2 = cla::reduce<std::minus<>>(triTransformed.p3, triTransformed.p1);
+			cla::vf3d line1 = triTransformed.p2 - triTransformed.p1;
+			cla::vf3d line2 = triTransformed.p3 - triTransformed.p1;
 
 			cla::vf3d normal = cla::normalize(cla::cross(line1, line2));
 
-			cla::vf3d cameraRay = cla::reduce<std::minus<>>(triTransformed.p1, cameraPos);
+			cla::vf3d cameraRay = triTransformed.p1 - cameraPos;
 
 			if (cla::dot(normal, cameraRay) < 0.0f)
 			{
-				cla::vf3d light_direction = cla::normalize(cla::vf3d(1.0f, 0.0f, 0.0f));
+				cla::vf3d light_direction = cla::normalize({ 0.0f, 1.0f, 0.0f });
 
 				float dp = ((std::powf(50.0f, ((cla::dot(normal, light_direction) + 1.0f) * 0.5f)) - 1.0f) * 0.02f);
 
@@ -121,32 +168,40 @@ public:
 				triViewed.p2 = cla::mul(triTransformed.p2, matView);
 				triViewed.p3 = cla::mul(triTransformed.p3, matView);
 
+				triViewed.p1 = triTransformed.p1 * matView;
+				triViewed.p2 = triTransformed.p2 * matView;
+				triViewed.p3 = triTransformed.p3 * matView;
+
 				int clippedTris = 0;
 				cla::tri<float> clipped[2];
-				clippedTris = cla::clip(cla::vf3d(0.0f, 0.0f, 0.1f), cla::vf3d(0.0f, 0.0f, 1.0f), triViewed, clipped[0], clipped[1]);
+				clippedTris = cla::clip({ 0.0f, 0.0f, 0.1f }, { 0.0f, 0.0f, 1.0f }, triViewed, clipped[0], clipped[1]);
 
 				for (int n = 0; n < clippedTris; ++n)
 				{
-					triProjected.p1 = cla::mul(clipped[n].p1, matProj);
-					triProjected.p2 = cla::mul(clipped[n].p2, matProj);
-					triProjected.p3 = cla::mul(clipped[n].p3, matProj);
+					triProjected.p1 = clipped[n].p1 * matProj;
+					triProjected.p2 = clipped[n].p2 * matProj;
+					triProjected.p3 = clipped[n].p3 * matProj;
 
-					triProjected.p1 = cla::apply<std::divides<>>(triProjected.p1, triProjected.p1.w);
-					triProjected.p2 = cla::apply<std::divides<>>(triProjected.p2, triProjected.p2.w);
-					triProjected.p3 = cla::apply<std::divides<>>(triProjected.p3, triProjected.p3.w);
 
-					triProjected.p1 = cla::apply<std::multiplies<>>(triProjected.p1, -1.0f);
-					triProjected.p2 = cla::apply<std::multiplies<>>(triProjected.p2, -1.0f);
-					triProjected.p3 = cla::apply<std::multiplies<>>(triProjected.p3, -1.0f);
+					triProjected.p1 = (triProjected.p1 / triProjected.p1.w);
+					triProjected.p2 = (triProjected.p2 / triProjected.p2.w);
+					triProjected.p3 = (triProjected.p3 / triProjected.p3.w);
 
-					triProjected.p1 = cla::apply<std::plus<>>(triProjected.p1, 1.0f);
-					triProjected.p2 = cla::apply<std::plus<>>(triProjected.p2, 1.0f);
-					triProjected.p3 = cla::apply<std::plus<>>(triProjected.p3, 1.0f);
+
+					triProjected.p1 = -triProjected.p1;
+					triProjected.p2 = -triProjected.p2;
+					triProjected.p3 = -triProjected.p3;
+
+
+					triProjected.p1 = (triProjected.p1 + 1.0f);
+					triProjected.p2 = (triProjected.p2 + 1.0f);
+					triProjected.p3 = (triProjected.p3 + 1.0f);
+
 
 					triProjected.p1.x *= halfScreenWidth;  triProjected.p2.x *= halfScreenWidth;  triProjected.p3.x *= halfScreenWidth;
 					triProjected.p1.y *= halfScreenHeight; triProjected.p2.y *= halfScreenHeight; triProjected.p3.y *= halfScreenHeight;
 
-					trisToRaster.emplace_back(cla::tri<float>(triProjected.p1, triProjected.p2, triProjected.p3, olc::PixelF(dp, dp, dp, 1.0f)) );
+					trisToRaster.emplace_back(cla::tri<float>(triProjected.p1, triProjected.p2, triProjected.p3, olc::PixelF(dp, dp, dp, 1.0f), t.texture) );
 				}
 			}
 		}
@@ -186,7 +241,7 @@ public:
 					}
 
 					for (int w = 0; w < addTris; ++w)
-						listTriangles.emplace_back(cla::tri<float>{ clipped[w].p1, clipped[w].p2, clipped[w].p3, triToRaster.col });
+						listTriangles.emplace_back(cla::tri{ clipped[w].p1, clipped[w].p2, clipped[w].p3, triToRaster.lightVal, triToRaster.texture });
 				}
 
 				newTris = listTriangles.size();
@@ -194,18 +249,21 @@ public:
 
 			for (auto& t : listTriangles)
 			{
-				DrawPolygonDecal(gfxTexture.Decal(),
+				DrawPolygonDecal(t.texture,
+				//std::array<olc::vf2d, 3>
 				{
-					{ t.p1.x, t.p1.y },
-					{ t.p2.x, t.p2.y },
-					{ t.p3.x, t.p3.y }
-				}, { { 1.0f, 0.0f }, { 0.0f, 1.0f }, { 0.0f, 0.0f } }, t.col);
+					olc::vf2d{ t.p1.x, t.p1.y },
+					olc::vf2d{ t.p2.x, t.p2.y },
+					olc::vf2d{ t.p3.x, t.p3.y }
+				}, t.lightVal);
 			}
 		}
 
 		trisToRaster.clear();
 
 		DrawStringDecal({ 10.0f, 10.0f }, cameraPos.str(), olc::YELLOW);
+		DrawStringDecal({ 10.0f, 25.0f }, cameraVel.str(), olc::YELLOW);
+		DrawStringDecal({ 10.0f, 40.0f }, cameraAcc.str(), olc::YELLOW);
 
 		return !(GetKey(olc::Key::ESCAPE).bPressed);
 	}
@@ -220,7 +278,7 @@ int main(void)
 {
 	Renderer app;
 
-	if (app.Construct((int)screenWidth, (int)screenHeight, 1, 1, false, false, false)) app.Start();
+	if (app.Construct((int)screenWidth, (int)screenHeight, 2, 2, false, false, false)) app.Start();
 	else std::exit(EXIT_FAILURE);
 
 	return 0;

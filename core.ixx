@@ -11,9 +11,20 @@ export module core;
 
 export namespace cla
 {
-	//define the matrix alias to a c++ array of arrays
-	template<typename T, unsigned int N>
-	using matrix = std::array<std::array<T, N>, N>;
+	template<typename T = float, std::size_t S = 4>
+	class matrix
+	{
+	public:
+		std::array<std::array<T, S>, S> data;
+
+		template<typename T = float, std::size_t S>
+		constexpr auto operator*=(const cla::matrix<T, S>& mat) noexcept
+		{
+			data = data * mat;
+
+			return *this;
+		}
+	};
 
 	//define matrix type aliases
 	using int2x2 = matrix<int, 2>;
@@ -27,8 +38,7 @@ export namespace cla
 	using double2x2 = matrix<double, 2>;
 	using double3x3 = matrix<double, 3>;
 	using double4x4 = matrix<double, 4>;
-
-
+	
 	template<typename T = float>
 	struct v3d_generic
 	{
@@ -42,6 +52,17 @@ export namespace cla
 		bool operator != (const v3d_generic& rhs) const noexcept { return (this->x != rhs.x || this->y != rhs.y || this->z != rhs.z); }
 		const std::string str() const noexcept { return std::string("(") + std::to_string(this->x) + "," + std::to_string(this->y) + ", " + std::to_string(this->z) + ")"; }
 		friend std::ostream& operator << (std::ostream& os, const v3d_generic& rhs) { os << rhs.str(); return os; }
+
+		constexpr auto& operator+=(const cla::v3d_generic<T>& vec) noexcept { x += vec.x; y += vec.y; z += vec.z; return *this; }
+		constexpr auto& operator-=(const cla::v3d_generic<T>& vec) noexcept { x -= vec.x; y -= vec.y; z -= vec.z; return *this; }
+		constexpr auto& operator/=(const cla::v3d_generic<T>& vec) noexcept { x /= vec.x; y /= vec.y; z /= vec.z; return *this; }
+		constexpr auto& operator*=(const cla::v3d_generic<T>& vec) noexcept { x *= vec.x; y *= vec.y; z *= vec.z; return *this; }
+
+		constexpr auto& operator/=(const T& operand) noexcept { x /= operand; y /= operand; z /= operand; return *this; }
+		constexpr auto& operator*=(const T& operand) noexcept { x *= operand; y *= operand; z *= operand; return *this; }
+
+		constexpr auto operator+() const noexcept { return cla::v3d_generic<T>(+x, +y, +z); }
+		constexpr auto operator-() const noexcept { return cla::v3d_generic<T>(-x, -y, -z); }
 	};
 
 	using vi3d = v3d_generic<int32_t>;
@@ -55,15 +76,17 @@ export namespace cla
 	{
 		cla::v3d_generic<T> p1, p2, p3;
 
-		olc::Pixel col;
+		olc::Pixel lightVal;
+
+		olc::Decal* texture;
 
 		tri<T>() = default;
 
-		tri<T>(cla::v3d_generic<T> t1, cla::v3d_generic<T> t2, cla::v3d_generic<T> t3, olc::Pixel col) noexcept
-			: p1(t1), p2(t2), p3(t3), col(col) {}
+		tri<T>(cla::v3d_generic<T> t1, cla::v3d_generic<T> t2, cla::v3d_generic<T> t3, olc::Pixel lightVal, olc::Decal* texture) noexcept
+			: p1(t1), p2(t2), p3(t3), lightVal(lightVal), texture(texture) {}
 	};
 
-	std::vector<cla::tri<float>> load(const std::string& filename)
+	std::vector<cla::tri<float>> loadOBJ(const std::string& filename)
 	{
 		std::ifstream f(filename);
 		if (!f.is_open()) return {};
@@ -92,7 +115,7 @@ export namespace cla
 			{
 				int f[3];
 				s >> junk >> f[0] >> f[1] >> f[2];
-				tris.emplace_back(cla::tri<float>(verts[f[0] - 1], verts[f[1] - 1], verts[f[2] - 1], olc::WHITE));
+				tris.emplace_back(cla::tri<float>(verts[f[0] - 1], verts[f[1] - 1], verts[f[2] - 1], olc::WHITE, nullptr));
 			}
 		}
 

@@ -78,15 +78,15 @@ export namespace cla
 		return outVec;
 	}
 
-	template<typename T = float, std::size_t S>
-	constexpr auto mul(const cla::v3d_generic<T>& vec, const cla::matrix<T, S>& mat) noexcept
+	template<typename T = float>
+	constexpr auto mul(const cla::v3d_generic<T>& vec, const cla::matrix<T, 4>& mat) noexcept
 	{
 		cla::v3d_generic<T> outVec;
 
-		outVec.x = vec.x * mat[0][0] + vec.y * mat[1][0] + vec.z * mat[2][0] + mat[3][0];
-		outVec.y = vec.x * mat[0][1] + vec.y * mat[1][1] + vec.z * mat[2][1] + mat[3][1];
-		outVec.z = vec.x * mat[0][2] + vec.y * mat[1][2] + vec.z * mat[2][2] + mat[3][2];
-		outVec.w = vec.x * mat[0][3] + vec.y * mat[1][3] + vec.z * mat[2][3] + mat[3][3];
+		outVec.x = vec.x * mat.data[0][0] + vec.y * mat.data[1][0] + vec.z * mat.data[2][0] + mat.data[3][0];
+		outVec.y = vec.x * mat.data[0][1] + vec.y * mat.data[1][1] + vec.z * mat.data[2][1] + mat.data[3][1];
+		outVec.z = vec.x * mat.data[0][2] + vec.y * mat.data[1][2] + vec.z * mat.data[2][2] + mat.data[3][2];
+		outVec.w = vec.x * mat.data[0][3] + vec.y * mat.data[1][3] + vec.z * mat.data[2][3] + mat.data[3][3];
 
 		return outVec;
 	}
@@ -107,6 +107,97 @@ export namespace cla
 
 		return cla::reduce<std::plus<>>(lineStart, lineToIntersect);
 	}
+
+	template<typename T = float>
+	constexpr auto inverse(const cla::v3d_generic<T>& vec) noexcept
+	{
+		cla::v3d_generic<T> outVec;
+
+		outVec.x = -vec.x;
+		outVec.y = -vec.y;
+		outVec.z = -vec.z;
+		outVec.w = +vec.w;
+		
+		return outVec;
+	}
+
+	template<typename T = float>
+	constexpr auto set(cla::v3d_generic<T>& vec, const T& operand) noexcept
+	{
+		vec.x = operand;
+		vec.y = operand;
+		vec.z = operand;
+
+		return vec;
+	}
+
+	template<typename T = float>
+	constexpr auto operator+(const cla::v3d_generic<T>& vec1, const cla::v3d_generic<T>& vec2) noexcept
+	{
+		return cla::reduce<std::plus<>>(vec1, vec2);
+	}
+
+	template<typename T = float>
+	constexpr auto operator-(const cla::v3d_generic<T>& vec1, const cla::v3d_generic<T>& vec2) noexcept
+	{
+		return cla::reduce<std::minus<>>(vec1, vec2);
+	}
+
+	template<typename T = float>
+	constexpr auto operator/(const cla::v3d_generic<T>& vec1, const cla::v3d_generic<T>& vec2) noexcept
+	{
+		return cla::reduce<std::divides<>>(vec1, vec2);
+	}
+
+	template<typename T = float>
+	constexpr auto operator*(const cla::v3d_generic<T>& vec1, const cla::v3d_generic<T>& vec2) noexcept
+	{
+		return cla::reduce<std::multiplies<>>(vec1, vec2);
+	}
+
+
+	template<typename T = float>
+	constexpr auto operator+(cla::v3d_generic<T>& vec, const T& operand) noexcept
+	{
+		return cla::apply<std::plus<>>(vec, operand);
+	}
+
+	template<typename T = float>
+	constexpr auto operator-(cla::v3d_generic<T>& vec, const T& operand) noexcept
+	{
+		return cla::apply<std::minus<>>(vec, operand);
+	}
+
+	template<typename T = float>
+	constexpr auto operator/(cla::v3d_generic<T>& vec, const T& operand) noexcept
+	{
+		return cla::apply<std::divides<>>(vec, operand);
+	}
+
+	template<typename T = float>
+	constexpr auto operator*(cla::v3d_generic<T>& vec, const T& operand) noexcept
+	{
+		return cla::apply<std::multiplies<>>(vec, operand);
+	}
+
+	template<typename T = float>
+	constexpr auto operator^(cla::v3d_generic<T>& vec, const T& operand) noexcept
+	{
+		return cla::set(vec, operand);
+	}
+
+	template<typename T = float>
+	constexpr auto operator!(const cla::v3d_generic<T>& vec) noexcept
+	{
+		return cla::inverse(vec);
+	}
+
+	template<typename T = float>
+	constexpr auto operator*(const cla::v3d_generic<T>& vec, const cla::matrix<T, 4>& mat) noexcept
+	{
+		return cla::mul(vec, mat);
+	}
+
 
 	template<typename T = float>
 	constexpr auto clip(cla::v3d_generic<T>&& plane_p, cla::v3d_generic<T>&& plane_n, cla::tri<T>& in_tri, cla::tri<T>& out_tri1, cla::tri<T>& out_tri2) noexcept

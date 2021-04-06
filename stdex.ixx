@@ -160,4 +160,10 @@ export namespace std
 
 		return numLines;
 	}
+
+	template <typename T = float> 
+	T signum(T val) noexcept
+	{
+		return T((T(0.0f) < val) - (val < T(0.0f)));
+	}
 }

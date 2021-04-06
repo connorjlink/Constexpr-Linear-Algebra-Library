@@ -791,6 +791,18 @@ namespace olc
 		uint32_t points = 0;
 	};
 
+	struct DecalInstance3
+	{
+		olc::Decal* decal = nullptr;
+		std::array<olc::vf2d, 3> pos;
+		std::array<olc::vf2d, 3> uv;
+		std::array<float, 3> w;
+		std::array<olc::Pixel, 3> tint;
+
+		olc::DecalMode mode = olc::DecalMode::NORMAL;
+		uint32_t points = 0;
+	};
+
 	struct LayerDesc
 	{
 		olc::vf2d vOffset = { 0, 0 };
@@ -800,6 +812,7 @@ namespace olc
 		olc::Sprite* pDrawTarget = nullptr;
 		uint32_t nResID = 0;
 		std::vector<DecalInstance> vecDecalInstance;
+		std::vector<DecalInstance3> vecDecalInstance3;
 		olc::Pixel tint = olc::WHITE;
 		std::function<void()> funcHook = nullptr;
 	};
@@ -816,6 +829,7 @@ namespace olc
 		virtual void	   SetDecalMode(const olc::DecalMode& mode) = 0;
 		virtual void       DrawLayerQuad(const olc::vf2d& offset, const olc::vf2d& scale, const olc::Pixel tint) = 0;
 		virtual void       DrawDecal(const olc::DecalInstance& decal) = 0;
+		virtual void       DrawDecal3(const olc::DecalInstance3& decal) = 0;
 		virtual uint32_t   CreateTexture(const uint32_t width, const uint32_t height, const bool filtered = false, const bool clamp = true) = 0;
 		virtual void       UpdateTexture(uint32_t id, olc::Sprite* spr) = 0;
 		virtual void       ReadTexture(uint32_t id, olc::Sprite* spr) = 0;
@@ -1011,7 +1025,7 @@ namespace olc
 		// Draws a corner shaded rectangle as a decal
 		void GradientFillRectDecal(const olc::vf2d& pos, const olc::vf2d& size, const olc::Pixel colTL, const olc::Pixel colBL, const olc::Pixel colBR, const olc::Pixel colTR);
 		// Draws an arbitrary convex textured polygon using GPU
-		void DrawPolygonDecal(olc::Decal* decal, const std::vector<olc::vf2d>& pos, const std::vector<olc::vf2d>& uv, const olc::Pixel tint = olc::WHITE);
+		void DrawPolygonDecal(olc::Decal* decal, const std::array<olc::vf2d, 3>& pos, olc::Pixel tint = olc::WHITE) noexcept;
 				
 		// Clears entire draw target to Pixel
 		void Clear(Pixel p);
@@ -1264,60 +1278,6 @@ namespace olc
 
 	Sprite::~Sprite()
 	{ pColData.clear();	}
-
-	// To Be Deprecated
-	//olc::rcode Sprite::LoadFromPGESprFile(const std::string& sImageFile, olc::ResourcePack* pack)
-	//{
-	//	if (pColData) delete[] pColData;
-	//	auto ReadData = [&](std::istream& is)
-	//	{
-	//		is.read((char*)&width, sizeof(int32_t));
-	//		is.read((char*)&height, sizeof(int32_t));
-	//		pColData = new Pixel[width * height];
-	//		is.read((char*)pColData, (size_t)width * (size_t)height * sizeof(uint32_t));
-	//	};
-
-	//	// These are essentially Memory Surfaces represented by olc::Sprite
-	//	// which load very fast, but are completely uncompressed
-	//	if (pack == nullptr)
-	//	{
-	//		std::ifstream ifs;
-	//		ifs.open(sImageFile, std::ifstream::binary);
-	//		if (ifs.is_open())
-	//		{
-	//			ReadData(ifs);
-	//			return olc::OK;
-	//		}
-	//		else
-	//			return olc::FAIL;
-	//	}
-	//	else
-	//	{
-	//		ResourceBuffer rb = pack->GetFileBuffer(sImageFile);
-	//		std::istream is(&rb);
-	//		ReadData(is);
-	//		return olc::OK;
-	//	}
-	//	return olc::FAIL;
-	//}
-
-	//olc::rcode Sprite::SaveToPGESprFile(const std::string& sImageFile)
-	//{
-	//	if (pColData == nullptr) return olc::FAIL;
-
-	//	std::ofstream ofs;
-	//	ofs.open(sImageFile, std::ifstream::binary);
-	//	if (ofs.is_open())
-	//	{
-	//		ofs.write((char*)&width, sizeof(int32_t));
-	//		ofs.write((char*)&height, sizeof(int32_t));
-	//		ofs.write((char*)pColData, std::streamsize(width) * std::streamsize(height) * sizeof(uint32_t));
-	//		ofs.close();
-	//		return olc::OK;
-	//	}
-
-	//	return olc::FAIL;
-	//}
 
 	void Sprite::SetSampleMode(olc::Sprite::Mode mode)
 	{ modeSample = mode; }
@@ -2427,24 +2387,41 @@ namespace olc
 		vLayers[nTargetLayer].vecDecalInstance.push_back(di);
 	}
 
-	void PixelGameEngine::DrawPolygonDecal(olc::Decal* decal, const std::vector<olc::vf2d>& pos, const std::vector<olc::vf2d>& uv, const olc::Pixel tint)
+	void PixelGameEngine::DrawPolygonDecal(olc::Decal* decal, const std::array<olc::vf2d, 3>& pos, olc::Pixel tint) noexcept
 	{
-		DecalInstance di;
+		//DecalInstance di;
+		//di.decal = decal;
+		//di.points = uint32_t(pos.size());
+		//di.pos.resize(di.points);
+		//di.uv.resize(di.points);
+		//di.w.resize(di.points);
+		//di.tint.resize(di.points);
+
+		DecalInstance3 di;
 		di.decal = decal;
-		di.points = uint32_t(pos.size());
-		di.pos.resize(di.points);
-		di.uv.resize(di.points);
-		di.w.resize(di.points);
-		di.tint.resize(di.points);
-		for (uint32_t i = 0; i < di.points; i++)
+		di.points = 3;
+		//di.pos.resize(3);
+		//di.uv.resize(3);
+		//di.w.resize(3);
+		//di.tint.resize(3);
+
+
+		for (uint32_t i = 0; i < 3; i++)
 		{
-			di.pos[i] = { (pos[i].x * vInvScreenSize.x) * 2.0f - 1.0f, ((pos[i].y * vInvScreenSize.y) * 2.0f - 1.0f) * -1.0f };
-			di.uv[i] = uv[i];
-			di.tint[i] = tint;
+			//di.pos[i] = { (pos[i].x * vInvScreenSize.x) * 2.0f - 1.0f, ((pos[i].y * vInvScreenSize.y) * 2.0f - 1.0f) * -1.0f };
+			//di.uv[i] = uv[i];
+			//di.tint[i] = tint;
+			//di.w[i] = 1.0f;
+
+			di.pos[i] = { (std::move(pos[i].x) * vInvScreenSize.x) * 2.0f - 1.0f, ((std::move(pos[i].y) * vInvScreenSize.y) * 2.0f - 1.0f) * -1.0f };
+			//di.uv[i] = std::move(uv[i]);
+			di.tint[i] = std::move(tint);
 			di.w[i] = 1.0f;
 		}
+
+		di.uv = std::array<olc::vf2d, 3>{ olc::vf2d{ 1.0f, 0.0f }, olc::vf2d{ 0.0f, 1.0f }, olc::vf2d{ 0.0f, 0.0f } };
 		di.mode = nDecalMode;
-		vLayers[nTargetLayer].vecDecalInstance.push_back(di);
+		vLayers[nTargetLayer].vecDecalInstance3.emplace_back(di);
 	}
 
 	void PixelGameEngine::FillRectDecal(const olc::vf2d& pos, const olc::vf2d& size, const olc::Pixel col)
@@ -2989,7 +2966,12 @@ namespace olc
 					// Display Decals in order for this layer
 					for (auto& decal : layer->vecDecalInstance)
 						renderer->DrawDecal(decal);
+
+					for (auto& tri : layer->vecDecalInstance3)
+						renderer->DrawDecal3(tri);
+
 					layer->vecDecalInstance.clear();
+					layer->vecDecalInstance3.clear();
 				}
 				else
 				{
@@ -3332,6 +3314,29 @@ namespace olc
 		}
 
 		void DrawDecal(const olc::DecalInstance& decal) override
+		{
+			SetDecalMode(decal.mode);
+
+			if (decal.decal == nullptr)
+				glBindTexture(GL_TEXTURE_2D, 0);
+			else
+				glBindTexture(GL_TEXTURE_2D, decal.decal->id);
+
+			if (nDecalMode == DecalMode::WIREFRAME)
+				glBegin(GL_LINE_LOOP);
+			else
+				glBegin(GL_TRIANGLE_FAN);
+
+			for (uint32_t n = 0; n < decal.points; n++)
+			{
+				glColor4ub(decal.tint[n].r, decal.tint[n].g, decal.tint[n].b, decal.tint[n].a);
+				glTexCoord4f(decal.uv[n].x, decal.uv[n].y, 0.0f, decal.w[n]);
+				glVertex2f(decal.pos[n].x, decal.pos[n].y);
+			}
+			glEnd();
+		}
+
+		void DrawDecal3(const olc::DecalInstance3& decal) override
 		{
 			SetDecalMode(decal.mode);
 
@@ -4349,7 +4354,8 @@ namespace olc
 
 			// Define window furniture
 			DWORD dwExStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;
-			DWORD dwStyle = WS_CAPTION | WS_SYSMENU | WS_VISIBLE | WS_THICKFRAME;
+			//DWORD dwStyle = WS_CAPTION | WS_SYSMENU | WS_VISIBLE | WS_THICKFRAME;
+			DWORD dwStyle = WS_OVERLAPPEDWINDOW | WS_VISIBLE;
 
 			olc::vi2d vTopLeft = vWindowPos;
 
@@ -4419,7 +4425,8 @@ namespace olc
 			mapKeys[VK_OEM_PERIOD] = Key::PERIOD;	// the period key on any keyboard
 			mapKeys[VK_CAPITAL] = Key::CAPS_LOCK;
 
-			//ShowCursor(FALSE);
+			ShowCursor(FALSE);
+
 			return olc::OK;
 		}
 
