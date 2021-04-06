@@ -16,3 +16,7 @@ Functionality:
 -vector scaling
 -vector addition
 -vector application
+
+-custom operators overloads for most operations
+
+Special thanks to Javidx9 for making this possible. I took inspiration (and code) from his PixelGameEngine and software rasterizer projects.
