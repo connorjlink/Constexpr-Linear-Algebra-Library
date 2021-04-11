@@ -56,9 +56,9 @@ public:
 		matProj = cla::projection(fov, aspectRatio, nearPlane, farPlane);
 		matTrans = cla::translation(0.0f, 0.0f, 10.0f);
 
-		gfxTexture.Load("./wireframe.png");
+		gfxTexture.Load("./solid.png");
 
-		meshLoaded = cla::loadOBJ("./chess.obj");
+		meshLoaded = cla::loadOBJ("./test.obj");
 
 		for (auto& t : meshLoaded) t.texture = gfxTexture.Decal();
 
@@ -71,6 +71,8 @@ public:
 
 	bool OnUserUpdate(float fElapsedTime) override
 	{
+		theta += fElapsedTime;
+		
 		auto applyForce = [&](cla::vf3d force, cla::vf3d& accVec)
 		{
 			auto f = (force / m);
@@ -160,7 +162,7 @@ public:
 
 			if (cla::dot(normal, cameraRay) < 0.0f)
 			{
-				cla::vf3d light_direction = cla::normalize({ 0.0f, 1.0f, 0.0f });
+				cla::vf3d light_direction = cla::normalize({ 1.0f, 0.0f, 0.0f });
 
 				float dp = ((std::powf(50.0f, ((cla::dot(normal, light_direction) + 1.0f) * 0.5f)) - 1.0f) * 0.02f);
 
